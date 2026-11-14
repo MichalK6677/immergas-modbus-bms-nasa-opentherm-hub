@@ -93,6 +93,7 @@ substitutions:
   n_hub_m_night_on: "${hub_name_prefix} - Éjszakai ablak be (kazán)"
   n_hub_m_night_from: "${hub_name_prefix} - Éjszakai ablak kezdete (kazán)"
   n_hub_m_night_to: "${hub_name_prefix} - Éjszakai ablak vége (kazán)"
+  n_hub_defrost_any: "${hub_name_prefix} - Leolvasztás (bármely jel)"
   n_hub_u11_set: "${hub_name_prefix} - U11 Éjszakai funkció beállítva a kazánon"
   t_hub_day0: "Naponta"
   t_hub_day1: "Hétfő"

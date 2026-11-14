@@ -30,7 +30,7 @@ class ImmergasHubStrategy {
             { type: "grid", column_span: 3, cards: [card("immergas-water-card", { grid_options: { columns: "full" } })] },
             { type: "grid", column_span: 3, cards: [card("immergas-refrigerant-card", { grid_options: { columns: "full" }, flags: false })] },
             { type: "grid", column_span: 3, cards: [card("immergas-day-card", { grid_options: { columns: "full" }, ...(config.day ?? {}) })] },
-            { type: "grid", column_span: 3, cards: [card("immergas-calibration-card", { grid_options: { columns: "full" }, ...(config.curve?.max_floor_entity ? { max_floor_entity: config.curve.max_floor_entity } : {}), ...(config.calibration ?? {}) })] },
+            ...(config.calibration === false ? [] : [{ type: "grid", column_span: 3, cards: [card("immergas-calibration-card", { grid_options: { columns: "full" }, ...(config.curve?.max_floor_entity ? { max_floor_entity: config.curve.max_floor_entity } : {}), ...(config.calibration || {}) })] }]),
             ...(autos ? [{ type: "grid", column_span: 3, cards: [card("immergas-automations-card", { grid_options: { columns: "full" }, ...(config.automations ?? {}) })] }] : []),
             { type: "grid", column_span: 3, cards: [
               card("immergas-settings-card", { grid_options: { columns: 18 }, part: "online", ...(config.settings ?? {}) }),
@@ -71,7 +71,7 @@ class ImmergasDominusStrategy {
             { type: "grid", cards: [card("immergas-schedule-card", config.schedule ?? {})] },
             // Dominus 1.6.14: today's analysis (room comfort, building, phases, DHW use, weather, link, zones)
             { type: "grid", column_span: 3, cards: [card("immergas-day-card", config.day ?? {})] },
-            { type: "grid", column_span: 3, cards: [card("immergas-calibration-card", config.calibration ?? {})] },
+            ...(config.calibration === false ? [] : [{ type: "grid", column_span: 3, cards: [card("immergas-calibration-card", config.calibration || {})] }]),
             { type: "grid", column_span: 3, cards: [card("immergas-automations-card", config.automations ?? {})] },
             // online settings and boiler parameters: 50 % each, one under the other on a phone
             { type: "grid", column_span: 3, cards: [
@@ -123,7 +123,7 @@ function otDashboard(config: any, t: (a: string, b: string) => string) {
         // Dominus 1.6.14: today's analysis (gas, condensing, short cycling, DHW, room / degree days) - hidden tiles without data
         { type: "grid", column_span: 3, cards: [card("immergas-day-card", config.day ?? {})] },
         // calibration from the Today analysis and the boiler menu profile
-        { type: "grid", column_span: 3, cards: [card("immergas-calibration-card", config.calibration ?? {})] },
+        ...(config.calibration === false ? [] : [{ type: "grid", column_span: 3, cards: [card("immergas-calibration-card", config.calibration || {})] }]),
         { type: "grid", column_span: 3, cards: [card("immergas-automations-card", config.automations ?? {})] },
         // gas or electricity and the last DHW cycle: 50 % each, one under the other on a phone
         { type: "grid", column_span: 3, cards: [

@@ -161,7 +161,7 @@ interval:
           bool heater = id(hub_dhw_heater_on).state;                    // DHW electric heater (assumed, hub_combined)
           bool dhw = d09 || heater || d99 == 61 || d99 == 62 || d99 == 64;
           bool dhw_any = dhw || d99 == 44 || d99 == 45;
-          bool df = id(f1f2_defrost).state;
+          bool df = id(hub_defrost_any).state;   // 0x402E or the outdoor stage 0x8061
           float room = id(dd_zone1_temp_sensor).state, tgt = id(dd_zone1_setpoint_number).state;
           float out = id(dd_outside_temp_sensor).state, tank = id(dd_dhw_temp_sensor).state;
           bool room_ok = !std::isnan(room) && room > 1.0f && room < 40.0f;

@@ -86,7 +86,8 @@ globals:
     restore_value: true
     initial_value: "NAN"
   # DHW electric heater: total installed power (kW, 0 = not fitted), set by the number of hub_boiler_menu. It is on no
-  # bus: with D09 on, the compressor and the boiler off for 90 s and the cylinder below the setpoint the hub takes it as
+  # bus: with D09 on, the compressor and the boiler off (90 s after a run in this cycle, 5 min after D09 without one) and
+  # the cylinder below the setpoint the hub takes it as
   # heating (T-/T+: D99 = 64) and counts this power as DHW electricity and heat at COP 1.
   - id: hub_dhw_heater_kw
     type: float
@@ -100,6 +101,14 @@ globals:
     initial_value: "false"
   - id: hub_dhw_heater_kwh     # heater energy in the current DHW cycle
     type: float
+    initial_value: "0"
+  # 1.11.17: compressor ticks of the DHW cycle and those with TW2 - TW1 <= 0 (probes not on the heat pump's exchanger
+  # during DHW, seen on the HERCULES PRO): mostly such ticks = no heat from the flow for that cycle
+  - id: hub_dhw_hp_ticks
+    type: int
+    initial_value: "0"
+  - id: hub_dhw_neg_ticks
+    type: int
     initial_value: "0"
 
 # CWU: cykl = TT D99 61 (pompą) / 62 (gazem) / 64 (grzałką) + 44/45 (koniec CWU, dobieg); bez T-/T+ (brak D99)
@@ -131,10 +140,16 @@ interval:
             id(hub_dhw_used_gas) = false;
             id(hub_dhw_used_heater) = false;
             id(hub_dhw_heater_kwh) = 0.0f;
+            id(hub_dhw_hp_ticks) = 0;
+            id(hub_dhw_neg_ticks) = 0;
             ESP_LOGI("hub_dhw", "Start cyklu CWU: D99=%d, zasobnik %.1f °C", d99, t);
           }
           if (!std::isnan(t) && (std::isnan(id(hub_dhw_tmax)) || t > id(hub_dhw_tmax))) id(hub_dhw_tmax) = t;
-          if ((d99 == 61 || d09) && !std::isnan(hz) && hz > 0.0f) id(hub_dhw_used_hp) = true;
+          if ((d99 == 61 || d09) && !std::isnan(hz) && hz > 0.0f) {
+            id(hub_dhw_used_hp) = true;
+            float w2 = id(dd_sniff_1e_w_21).state, w1 = id(dd_sniff_1e_w_20).state;
+            if (!std::isnan(w2) && !std::isnan(w1)) { id(hub_dhw_hp_ticks)++; if (w2 - w1 <= 0.0f) id(hub_dhw_neg_ticks)++; }
+          }
           if (d99 == 62 || id(tt_gas_boiler_running).state) id(hub_dhw_used_gas) = true;
           if (id(hub_dhw_heater_on).state) {
             id(hub_dhw_used_heater) = true;
@@ -147,6 +162,11 @@ interval:
           id(hub_dhw_last_minutes) = (millis() - id(hub_dhw_start_ms)) / 60000.0f;
           id(hub_dhw_last_elec) = (std::isnan(e) || std::isnan(id(hub_dhw_e0))) ? NAN : e - id(hub_dhw_e0);
           id(hub_dhw_last_heat_flow) = (std::isnan(q) || std::isnan(id(hub_dhw_q0))) ? NAN : q - id(hub_dhw_q0);
+          if (id(hub_dhw_hp_ticks) >= 6 && id(hub_dhw_neg_ticks) * 2 > id(hub_dhw_hp_ticks)) {
+            ESP_LOGW("hub_dhw", "TW2 - TW1 <= 0 in %d of %d compressor readings: no heat from the flow for this cycle",
+                     id(hub_dhw_neg_ticks), id(hub_dhw_hp_ticks));
+            id(hub_dhw_last_heat_flow) = NAN;
+          }
           float kh = id(hub_dhw_heater_kwh);   // electric heater: electricity = heat (COP 1), not on F1/F2
           if (kh > 0.0f) {
             id(hub_dhw_last_elec) = (std::isnan(id(hub_dhw_last_elec)) ? 0.0f : id(hub_dhw_last_elec)) + kh;
@@ -200,6 +220,17 @@ binary_sensor:
     on_press:
       - lambda: id(hub_burner_starts_today) += 1;
 
+  # 1.11.17: defrost from any F1/F2 signal - the indoor flag 0x402E (Defrost Mode) or the outdoor defrost stage 0x8061
+  # (1-7, 0 / 255 = none). On some MIMs (HERCULES PRO) 0x402E never changes during a real defrost, the stage does.
+  - platform: template
+    id: hub_defrost_any
+    name: "${n_hub_defrost_any}"
+    icon: mdi:snowflake-melt
+    lambda: |-
+      if (id(f1f2_defrost).state) return true;
+      float st = id(hub_defrost_stage_raw).state;
+      return !std::isnan(st) && st >= 1.0f && st <= 7.0f;
+
   # DHW electric heater heating (assumed): it is on no bus. T-/T+: D99 = 64. Without T-/T+: D09 on, the compressor and
   # the gas boiler off for 90 s and the cylinder 0.5 K below the higher of D05 / DHW Comfort. Only with a heater power
   # set (hub_boiler_menu, > 0 kW) - the cylinder below the setpoint alone would also match a pause between cycles.
@@ -217,7 +248,10 @@ binary_sensor:
       if (!std::isnan(d99f)) return (int) d99f == 64;
       if (!id(dd_piec_zadanie_cwu_oczek).state || id(tt_gas_boiler_running).state) return false;
       if (!std::isnan(hz) && hz > 0.0f) return false;
-      if (now - id(hub_dhw_hp_last_ms) < 90000UL) return false;
+      // 1.11.17: the compressor ran in this DHW cycle and stopped 90 s ago, or it has not started 5 min after D09
+      // (the heat pump at its limit) - the valve switch and the compressor start alone take about 2 min
+      if (!id(hub_dhw_active)) return false;
+      if (id(hub_dhw_used_hp) ? now - id(hub_dhw_hp_last_ms) < 90000UL : now - id(hub_dhw_start_ms) < 300000UL) return false;
       float t = id(dd_dhw_temp_sensor).state;
       float set = id(dd_cwu_setpoint_number).state, cf = id(dd_dhw_comfort_set).state;
       if (std::isnan(set) || (!std::isnan(cf) && cf > set)) set = cf;
@@ -255,6 +289,14 @@ binary_sensor:
     internal: true
 
 sensor:
+  # outdoor defrost stage 0x8061 as a number (the f1f2 text sensor is translated) - for hub_defrost_any
+  - platform: f1f2_nasa
+    pdu: 0x8061
+    source: outdoor
+    id: hub_defrost_stage_raw
+    name: "${n_hub_defrost_any} (stage)"
+    internal: true
+
   # --- COP pompy ciepła, liczony w ESP z trzech magistral ---
   # Moc elektryczna: pobór jednostki zewnętrznej z NASA (0x8413, F1/F2). Gdy brak - prąd x napięcie sieci (F1/F2).
   # Nazwa bez zmian (używają jej szablony w HA).
@@ -348,7 +390,7 @@ sensor:
     accuracy_decimals: 0
     update_interval: 10s
     lambda: |-
-      if (!id(f1f2_defrost).state) return 0.0f;
+      if (!id(hub_defrost_any).state) return 0.0f;
       float flow = id(tt_d14_pump_flow_rate).state;  // l/h
       if (std::isnan(flow)) {   // no T-/T+: assumed flow (hub_boiler_menu), the DHW one while D09 says DHW
         bool dhw = std::isnan(id(tt_system_state_raw).state) && id(dd_piec_zadanie_cwu_oczek).state;
@@ -697,7 +739,7 @@ text_sensor:
     icon: mdi:state-machine
     update_interval: 10s
     lambda: |-
-      if (id(f1f2_defrost).state) return std::string("${t_hub_defrost}");
+      if (id(hub_defrost_any).state) return std::string("${t_hub_defrost}");
       float hz = id(dd_sniff_1e_i_11).state;
       bool hp = !std::isnan(hz) && hz > 0.0f;
       bool boiler = id(tt_gas_boiler_running).state;

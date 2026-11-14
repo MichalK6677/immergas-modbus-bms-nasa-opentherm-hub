@@ -93,6 +93,7 @@ substitutions:
   n_hub_m_night_on: "${hub_name_prefix} - Fascia notturna attiva (caldaia)"
   n_hub_m_night_from: "${hub_name_prefix} - Fascia notturna inizio (caldaia)"
   n_hub_m_night_to: "${hub_name_prefix} - Fascia notturna fine (caldaia)"
+  n_hub_defrost_any: "${hub_name_prefix} - Sbrinamento (qualsiasi segnale)"
   n_hub_u11_set: "${hub_name_prefix} - U11 Funzione notturna impostata in caldaia"
   t_hub_day0: "Ogni giorno"
   t_hub_day1: "Lunedì"

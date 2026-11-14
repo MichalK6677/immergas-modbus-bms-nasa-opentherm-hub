@@ -7,7 +7,7 @@ Karty Lovelace dla IMMERGAS Modbus BMS NASA OpenTherm HUB. Jeden plik JavaScript
 
 | Karta | Typ | Co pokazuje |
 |---|---|---|
-| Schemat | `custom:immergas-diagram-card` | animowany schemat instalacji: jednostka zewnętrzna (wentylator, Hz sprężarki, parownik, EEV), obieg czynnika, wymiennik płytowy, pompa obiegowa z przepływem, kocioł gazowy (Combo), zawór 3-drożny, bufor i dom, zasobnik CWU; aktywne obiegi świecą i płyną; kafle statystyk na górze. Opcje: `boiler: false` (Magis Pro), `buffer: false`; `stats: false` ukrywa kafelki nad schematem (tak robi strategia – te same dane są w karcie Teraz) |
+| Schemat | `custom:immergas-diagram-card` | animowany schemat instalacji: jednostka zewnętrzna (wentylator, Hz sprężarki, parownik, EEV), obieg czynnika, wymiennik płytowy, pompa obiegowa z przepływem, kocioł gazowy (Combo), zawór 3-drożny, bufor i dom, zasobnik CWU; aktywne obiegi świecą i płyną; kafle statystyk na górze. Opcje: `boiler: false` (Magis Pro), `buffer: false`, `advice: false` (bez podpowiedzi Kalibracji w ramce stanu), `cop: false` (bez *COP dziś* w niej); `stats: false` ukrywa kafelki nad schematem (tak robi strategia – te same dane są w karcie Teraz) |
 | Wykresy | `custom:immergas-charts-card` | wykresy SVG w zakładkach: **Doba** (temperatury wody i zasobnika + Hz sprężarki na osobnym wykresie z zaznaczonymi okresami CWU), **Tydzień** (średnia godzinowa mocy cieplnej i poboru), **Miesiąc** (ciepło i prąd dziennie + COP dzienny); podpowiedzi z celownikiem, legenda z bieżącymi wartościami, paleta czytelna dla daltonistów (jasny/ciemny) |
 | Teraz | `custom:immergas-now-card` | banery błędu i odszraniania, tryb pracy, Hz sprężarki, zasilanie/powrót, COP teraz/dziś, paski czasu (bieżąca faza na tle typowej długości z historii z szacowanym końcem, rytm CWU z następnym spodziewanym cyklem, tryb nocny: ile trwa i ile zostało albo odliczanie do startu, pasek ostatnich 6 h z cyklami sprężarki i kotła; ukrycie: `show_timers: false`, okno nocne z `night_start` / `night_stop` jak w karcie Tryb pracy, inaczej wyuczone z historii), kafle: na zewnątrz / Strefa 1 / zasobnik CWU / moc |
 | Nastawy | `custom:immergas-setpoints-card` | dwa kafle: ogrzewanie Strefy 1 i ciepła woda – temperatura, stan (grzeje / czuwa), regulator nastawy −/+ (kilka dotknięć składa się w jeden zapis) i profile **EKO / KOMFORT**: dla CO to profile Komfort / Eko Strefy 1 z pieca (w trybie chłodzenia – chłodzenia), edytowane pod zębatką; dla CWU encje DD `Nastawa CWU Komfort` / `Nastawa CWU Eko` i przełącznik `CWU Komfort-Eko wg harmonogramu` (DD ≥ 2.4.0, pod zębatką), na starszym DD opcje `dhw_eco` / `dhw_comfort` – pomocnicy `input_number` albo liczby (domyślnie 45 / 55 °C); opcjonalnie wilgotność `humidity_entity` / `humidity_target` |
@@ -58,11 +58,15 @@ karta Krzywe to wyjaśnia i pokazuje bieżące D04.
 Ta sama karta ma *Przepływ przyjęty (zamiast D14)*: bez T-/T+ nie ma przepływu, więc moc cieplna, COP i koszt ciepła są
 puste, dopóki nie wpiszesz przepływu swojej instalacji. *Przepływ przyjęty CWU* hub bierze, gdy D09 zgłasza CWU (obieg
 zasobnika ma zwykle inny przepływ); puste = pierwsza wartość dla obu. *Moc grzałki CWU (przyjęta)* (suma zamontowanych
-grzałek CWU, 0 = brak): grzałki nie ma na żadnej magistrali, więc przy D09, stojącej sprężarce i zasobniku poniżej
-nastawy hub pokazuje *Grzałka: CWU* i liczy tę moc jako prąd i ciepło CWU (COP 1). Okno nocne, które kocioł trzyma
+grzałek CWU, 0 = brak): grzałki nie ma na żadnej magistrali, więc przy D09, stojącej sprężarce (90 s po jej pracy
+w tym cyklu albo 5 min po D09 bez startu) i zasobniku poniżej nastawy hub pokazuje *Grzałka: CWU* i liczy tę moc jako
+prąd i ciepło CWU (COP 1); chip *Grzałka CWU* idzie za nią, gdy flaga grzałki Samsunga jest wyłączona. Okno nocne, które kocioł trzyma
 w emulowanym panelu strefy 1 (HERCULES PRO, 2701–2703), pokazuje kafelek Tryb nocny w karcie Tryb. Karta Krzywe
 dopasowuje oś temperatury do krzywej.
 `bms: false` / `bms: true` pod `strategy:` wymusza jedno albo drugie.
+Dopóki zmierzony COP twojej jednostki nie jest wiarygodny, `diagram: { advice: false, cop: false }` pod `strategy:`
+usuwa podpowiedź Kalibracji i *COP dziś* z ramki stanu na schemacie, a `calibration: false` pomija kartę Kalibracja
+w dashboardzie.
 
 **Bez huba – Immergas Dominus:** z samą integracją [Immergas Dominus](https://github.com/jotuera/immergas-dominus)
 (lokalne TCP do modułu Wi-Fi Dominus) użyj `type: custom:immergas-dominus` – okrojony dashboard z kartami Teraz,

@@ -127,15 +127,17 @@ class ImmergasCurveCard extends HubCard {
     const zad = this.n("zone1_set"), room = this.n("zone1");
     const floorE = this.opt("max_floor_entity"), maxF = floorE ? parseFloat(this.hass.states[floorE]?.state ?? floorE) : NaN;
     const tgt = isNaN(hi) || isNaN(lo) ? NaN : Math.max(lo, Math.min(hi, curve(out, xa, hi, xb, lo) + off));
-    // 1.11.16: the Y axis fits the curve, the floor limit, the flow and the room line (5 °C margin, at least 20 °C) -
-    // a low-temperature curve (R04 27 / R05 23) used only the bottom of the old fixed 15-60 °C chart
+    // the Y axis fits the curve, the flow, the room line and a floor limit close to the curve (1.11.16; 1.11.17: 2 °C
+    // margin, whole degrees, at least 8 °C, the floor line only when within 5 °C of R04, no flow during DHW) - a
+    // low-temperature curve (R04 27 / R05 23) used only the bottom of the old fixed 15-60 °C chart
     if (!isNaN(hi) && !isNaN(lo)) {
       const ok = (a: number[]) => a.filter((v) => !isNaN(v));
-      let y0 = Math.max(0, Math.floor((Math.min(...ok([lo, flow, isNaN(zad) ? NaN : zad + 2])) - 5) / 5) * 5);
-      let y1 = Math.ceil((Math.max(...ok([hi + off, hi, maxF, flow, d04])) + 5) / 5) * 5;
-      if (y1 - y0 < 20) y1 = y0 + 20;
-      if (y1 > 80) y1 = 80;
-      this.ax = { ...this.ax, Y0: y0, Y1: y1, ys: y1 - y0 <= 30 ? 5 : 10 };
+      const fl = this.dhwNow ? NaN : flow, fm = maxF <= Math.max(hi, hi + off) + 5 ? maxF : NaN;
+      const y0 = Math.max(0, Math.floor(Math.min(...ok([lo, lo + off, fl, isNaN(zad) ? NaN : zad + 2])) - 2));
+      let y1 = Math.min(80, Math.ceil(Math.max(...ok([hi + off, hi, fm, fl, d04])) + 2));
+      if (y1 - y0 < 8) y1 = y0 + 8;
+      const sp = y1 - y0;
+      this.ax = { ...this.ax, Y0: y0, Y1: y1, ys: sp <= 12 ? 2 : sp <= 30 ? 5 : 10 };
     }
     let comfort: unknown = nothing;
     if (!isNaN(room) && !isNaN(zad)) {
@@ -148,7 +150,7 @@ class ImmergasCurveCard extends HubCard {
     return html`
       ${this.info(out, comfort, d04, tgt, flow)}
       <svg viewBox="0 0 ${W} ${H}">${this.grid()}
-        ${this.hline(maxF, "red", this.t("maks. podłoga ", "max. floor ") + this.f(maxF) + "°", "above")}
+        ${this.hline(maxF <= this.ax.Y1 ? maxF : NaN, "red", this.t("maks. podłoga ", "max. floor ") + this.f(maxF) + "°", "above")}
         ${this.hline(isNaN(zad) ? NaN : zad + 2, "sky", this.t(`poniżej nie grzeje (pokój ${this.f(zad)}° + 2)`, `below it does not heat (room ${this.f(zad)}° + 2)`), "below", "2 3", 1.4, false)}
         ${this.curveSvg("r04", "r05", hi, lo, xa, xb, "peach", off, [Math.max(25, lo + 1), 60, 20, Math.min(45, hi - 1)], ["R04", "R05", "R02", "R03"])}
         ${this.nowMarks(out, tgt, d04, this.dhwNow ? NaN : flow, "sky")}</svg>

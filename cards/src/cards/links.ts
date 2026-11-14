@@ -358,8 +358,8 @@ class ImmergasLinksCard extends HubCard {
     /* four pairs in a row (a bus and the device under it); two pairs per row on a narrow card */
     .links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; }
     @container (max-width: 760px) { .links { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    /* option four_in_row: 4 x 1 down to a phone-width card */
-    @container (min-width: 481px) { .links.four { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+    /* option four_in_row: 4 x 1 down to a card of 640 px (1.11.17: 481 px squeezed the texts letter by letter on a phone) */
+    @container (min-width: 640px) { .links.four { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
     /* single tiles (Dominus, MAGIS M): four in a row on a wide card, two on a narrow one */
     .links.single { grid-auto-rows: auto; }
     /* every tile the same height: each pair spans two rows of one shared grid (subgrid), all rows 1fr */

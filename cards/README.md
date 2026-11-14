@@ -7,7 +7,7 @@ Lovelace cards for the IMMERGAS Modbus BMS NASA OpenTherm HUB. One JavaScript bu
 
 | Card | Type | What it shows |
 |---|---|---|
-| Diagram | `custom:immergas-diagram-card` | animated system schematic: outdoor unit (fan, compressor Hz, evaporator, EEV), refrigerant loop, plate heat exchanger, circulator with flow, gas boiler (Combo), 3-way valve, buffer + house, DHW cylinder; active paths glow and flow; stat tiles on top (`stats: false` hides them – the strategy does, the Now card shows the same). Options: `boiler: false` (Magis Pro), `buffer: false` |
+| Diagram | `custom:immergas-diagram-card` | animated system schematic: outdoor unit (fan, compressor Hz, evaporator, EEV), refrigerant loop, plate heat exchanger, circulator with flow, gas boiler (Combo), 3-way valve, buffer + house, DHW cylinder; active paths glow and flow; stat tiles on top (`stats: false` hides them – the strategy does, the Now card shows the same). Options: `boiler: false` (Magis Pro), `buffer: false`, `advice: false` (no Calibration hint in the status box), `cop: false` (no *COP today* there) |
 | Charts | `custom:immergas-charts-card` | native SVG charts in tabs: **Day** (water and cylinder temperatures + compressor Hz on its own chart with DHW periods shaded), **Week** (hourly mean heat output and input), **Month** (heat and electricity per day + daily COP); crosshair tooltips, legend with current values, colour-blind-safe palette (light/dark) |
 | Now | `custom:immergas-now-card` | fault and defrost banners, operating mode, compressor Hz, flow/return, COP now/today, cycle timers (current phase vs. its typical length from history with an estimated end, DHW rhythm with the next expected cycle, night mode elapsed / time left or countdown to start, last-6-h strip of compressor and boiler cycles; hide with `show_timers: false`, night window from `night_start` / `night_stop` like the Operating mode card, otherwise learned from history), outdoor / zone 1 / DHW cylinder / power tiles |
 | Setpoints | `custom:immergas-setpoints-card` | two tiles: zone 1 heating and hot water – temperature, state (heating / standby), −/+ setpoint regulator (several taps make one write) and **ECO / COMFORT** profiles: for CH the boiler's zone 1 Comfort / Eco presets (cooling presets in the cooling mode), edited under the gear; for DHW the DD entities `DHW Comfort setpoint` / `DHW Eco setpoint` and the switch `DHW Comfort-Eco by schedule` (DD ≥ 2.4.0, under the gear), on older DD the options `dhw_eco` / `dhw_comfort` – `input_number` helpers or numbers (default 45 / 55 °C); optional humidity `humidity_entity` / `humidity_target` |
@@ -58,11 +58,15 @@ Calibration card judges it against the readings from D+/D- and F1/F2, and anti-l
 The same card has *Assumed flow (instead of D14)*: without T-/T+ there is no flow rate, so heat output, COP and heat
 cost stay empty until you enter your installation's flow. *Assumed flow DHW* is used while D09 says DHW (the
 cylinder circuit usually has a different flow); empty = the first value for both. *Assumed DHW heater power* (total of
-the DHW electric heaters fitted, 0 = none): the heater is on no bus, so with D09 on, the compressor stopped and the
-cylinder below the setpoint the hub shows *Electric heater: DHW* and counts this power as DHW electricity and heat
-(COP 1). The night window the boiler keeps in the emulated zone 1 panel (HERCULES PRO, 2701–2703) shows in the Night
+the DHW electric heaters fitted, 0 = none): the heater is on no bus, so with D09 on, the compressor stopped (90 s after
+it ran in the cycle, or not started 5 min after D09) and the cylinder below the setpoint the hub shows *Electric
+heater: DHW* and counts this power as DHW electricity and heat (COP 1); the *DHW heater* chip follows it while the
+Samsung booster flag is off. The night window the boiler keeps in the emulated zone 1 panel (HERCULES PRO, 2701–2703) shows in the Night
 mode tile of the Mode card. The Curve card fits its temperature axis to the curve.
 `bms: false` / `bms: true` under `strategy:` forces it either way.
+While the measured COP of your unit is not trustworthy, `diagram: { advice: false, cop: false }` under `strategy:` keeps
+the Calibration hint and *COP today* out of the diagram's status box, and `calibration: false` leaves the Calibration
+card out of the dashboard.
 
 **Without a hub – Immergas Dominus:** with only the [Immergas Dominus](https://github.com/jotuera/immergas-dominus)
 integration (local TCP to the Dominus Wi-Fi module) use `type: custom:immergas-dominus` – a reduced dashboard with Now,

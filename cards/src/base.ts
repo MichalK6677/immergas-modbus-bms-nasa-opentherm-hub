@@ -199,6 +199,10 @@ export abstract class HubCard extends LitElement {
    *  except the boiler menu values copied into the hub (package hub_boiler_menu), which stand in for them */
   protected eid(k: Key) {
     const ids = this.idx?.ids, id = ids?.[k];
+    // 1.11.17: defrost from the hub (0x402E or the outdoor stage 0x8061) - some MIMs never set 0x402E; the DHW heater
+    // chip falls back to the hub's assumed electric heater while the Samsung booster flag is not on
+    if (k === "defrost" && ids?.hub_defrost) return ids.hub_defrost;
+    if (k === "dhw_heater" && ids?.hub_dhw_heater_on && this.hass?.states[id ?? ""]?.state !== "on") return ids.hub_dhw_heater_on;
     if (!ids || k === "tt_bms" || NAMES[k]?.[0] !== "TT" || !this.noBms) return id;
     const cp = MENU_COPY[k];
     return cp ? ids[cp] : undefined;
@@ -762,7 +766,7 @@ export abstract class HubCard extends LitElement {
 
 /** registers a card element + card picker entry */
 /** this bundle's version (also in package.json) */
-export const VERSION = "0.93.4";
+export const VERSION = "0.93.5";
 
 // The bundle can be loaded twice: the hub cards resource and the copy shipped with the Dominus integration, in any
 // order. A custom element can be defined only once, so every bundle (0.85.0+) queues its elements on a shared window

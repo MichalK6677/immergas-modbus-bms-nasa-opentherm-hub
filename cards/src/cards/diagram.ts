@@ -52,13 +52,13 @@ class ImmergasDiagramCard extends HubCard {
       sub = this.on("u11") ? this.t("funkcja nocna U11 – cichsza praca, niższa moc", "night function U11 – quieter, less power")
         : this.on("f_fr") ? this.t("ograniczenie sprężarki (FR) włączone", "compressor limit (FR) on") : this.t("ograniczona przez piec", "limited by the boiler");
       open = this.tap("cap_limit");
-    } else if (rec) {
+    } else if (rec && this.config.advice !== false) {   // option diagram: { advice: false } hides the Calibration hint
       col = rec.ok ? "green" : "peach"; icon = rec.ok ? "✓" : "➜"; title = rec.text; sub = rec.reason;
       const e = rec.entity;
       if (e) open = () => this.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: e }, bubbles: true, composed: true }));
     } else {
       title = this.t("Wszystko działa", "All running"); const cop = this.n("cop_today");
-      sub = cop > 0 ? this.t("COP dziś ", "COP today ") + this.f(cop, 1, 1) : "";
+      sub = cop > 0 && this.config.cop !== false ? this.t("COP dziś ", "COP today ") + this.f(cop, 1, 1) : "";   // option cop: false
       open = this.tap("cop_today");
     }
     // the texts wrap inside the box (HTML in a foreignObject): a long title takes two lines, the reason the rest

@@ -1651,7 +1651,7 @@ class ImmergasCalibrationCard extends HubCard {
         "Without T-/T+: R04 / R05 / R13 / R12, T02 / T05 / T07 and A03 / A04 are copies from the boiler menu (Boiler parameters offline card) and the readings come from D+/D- and F1/F2. “Set” changes only the copy – enter the same value in the boiler menu.")}</div>` : nothing}
       <div class="tbl">
         <div class="th">${this.t("Parametr", "Parameter")}</div><div class="th c">${this.t("Model", "Model")}</div>
-        <div class="th c">${this.t("Obecnie", "Now")}</div><div class="th c">${this.t("Rekomendacja", "Recommendation")}</div>
+        <div class="th c">${this.t("Obecnie", "Now")}</div><div class="th c threc">${this.t("Rekomendacja", "Recommendation")}</div>
         ${rows.map((r, i) => {
           const gh = i === 0 || rows[i - 1].group !== r.group ? GROUPS.find((g) => g[0] === r.group) : undefined;
           const cur = this.cur(r), d = diff(r), tag = "cal_" + (r.k ?? r.entity), conf = this.isArmed(tag), col = d ? "peach" : "green";
@@ -1700,6 +1700,13 @@ class ImmergasCalibrationCard extends HubCard {
       background: rgba(var(--ih-peach-rgb), .22); color: var(--ih-peach); }
     .set ha-icon { --mdc-icon-size: 13px; }
     @media (max-width: 520px) { .why { display: none; } }
+    /* 1.11.17: a narrow card (phone) - parameter, model and now in a row, the recommendation on its own row below */
+    :host { container-type: inline-size; }
+    @container (max-width: 560px) {
+      .tbl { grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(0, 1fr)); }
+      .tbl .cell.rec { grid-column: 1 / -1; margin-bottom: 4px; }
+      .tbl .th.threc { display: none; }
+    }
   `];
 }
 
