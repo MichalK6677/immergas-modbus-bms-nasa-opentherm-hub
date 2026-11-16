@@ -2500,5 +2500,14 @@
   "During DHW (D09) the hub takes the DHW flow – the cylinder circuit usually has a different resistance. Empty = the value above for both.": "Bei WW (D09) nimmt der Hub den WW-Durchfluss – der Speicherkreis hat meist einen anderen Widerstand. Leer = der Wert oben für beide.",
   "Assumed flow DHW (instead of D14)": "Angenommener Durchfluss WW (statt D14)",
   "The DHW electric heater is on no bus. Enter the total power of the heaters fitted (0 = none) – with D09 on, the compressor stopped and the cylinder below the setpoint the hub shows “Electric heater: DHW” and adds this power to the DHW electricity and heat (COP 1).": "Der WW-Heizstab ist auf keinem Bus. Gesamtleistung der eingebauten Heizstäbe eingeben (0 = keiner) – bei D09, stehendem Verdichter und Speicher unter dem Sollwert zeigt der Hub „Heizstab: WW“ und rechnet diese Leistung zu WW-Strom und -Wärme (COP 1).",
-  "Assumed DHW heater power": "Angenommene Leistung WW-Heizstab"
+  "Assumed DHW heater power": "Angenommene Leistung WW-Heizstab",
+  "Zone 1 time program (zones + DHW)": "Zeitprogramm Zone 1 (Zonen + WW)",
+  "⚠ the boiler's calendar, and the hub also writes the setpoint (Comfort / Eco by schedule) – switch one off": "⚠ Kesselkalender, und der Hub schreibt den Sollwert zusätzlich (Komfort / Eco nach Programm) – eines ausschalten",
+  "by the boiler calendar": "nach Kesselkalender",
+  "hub schedule (Comfort / Eco)": "Hub-Programm (Komfort / Eco)",
+  "DHW time program (shared with the zones)": "WW-Zeitprogramm (gemeinsam mit den Zonen)",
+  "off – the boiler's calendar switches the DHW setpoint (time programs Auto)": "aus – der Kesselkalender schaltet den WW-Sollwert (Zeitprogramme Auto)",
+  "⚠ Time programs are on Auto, so the boiler switches Comfort / Eco itself – the hub writes the setpoint next to it. Keep one.": "⚠ Die Zeitprogramme stehen auf Auto, der Kessel schaltet Komfort / Eco also selbst – der Hub schreibt den Sollwert daneben. Eines behalten.",
+  "⚠ time programs on Auto – the boiler switches Comfort / Eco too; keep one": "⚠ Zeitprogramme auf Auto – der Kessel schaltet Komfort / Eco auch; eines behalten",
+  "prices, cylinder, screed, floor area, fault language": "Preise, Speicher, Estrich, Fläche, Störungssprache"
 }

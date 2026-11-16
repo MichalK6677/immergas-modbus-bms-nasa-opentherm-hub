@@ -2500,5 +2500,14 @@
   "During DHW (D09) the hub takes the DHW flow – the cylinder circuit usually has a different resistance. Empty = the value above for both.": "Pri TÚV (D09) hub použije prietok TÚV – okruh zásobníka má zvyčajne iný odpor. Prázdne = hodnota vyššie pre oba.",
   "Assumed flow DHW (instead of D14)": "Predpokladaný prietok TÚV (namiesto D14)",
   "The DHW electric heater is on no bus. Enter the total power of the heaters fitted (0 = none) – with D09 on, the compressor stopped and the cylinder below the setpoint the hub shows “Electric heater: DHW” and adds this power to the DHW electricity and heat (COP 1).": "Ohrievač TÚV nie je na žiadnej zbernici. Zadajte celkový výkon nainštalovaných ohrievačov (0 = žiadny) – pri D09, stojacom kompresore a zásobníku pod nastavenou teplotou hub ukáže „Ohrievač: TÚV“ a pripočíta tento výkon k elektrine a teplu TÚV (COP 1).",
-  "Assumed DHW heater power": "Predpokladaný výkon ohrievača TÚV"
+  "Assumed DHW heater power": "Predpokladaný výkon ohrievača TÚV",
+  "Zone 1 time program (zones + DHW)": "Časový program zóny 1 (zóny + TÚV)",
+  "⚠ the boiler's calendar, and the hub also writes the setpoint (Comfort / Eco by schedule) – switch one off": "⚠ kalendár kotla a hub navyše zapisuje nastavenie (Komfort / Úsporný podľa rozvrhu) – jedno vypnite",
+  "by the boiler calendar": "podľa kalendára kotla",
+  "hub schedule (Comfort / Eco)": "rozvrh hubu (Komfort / Úsporný)",
+  "DHW time program (shared with the zones)": "Časový program TÚV (spoločný so zónami)",
+  "off – the boiler's calendar switches the DHW setpoint (time programs Auto)": "vyp. – nastavenie TÚV prepína kalendár kotla (časové programy Auto)",
+  "⚠ Time programs are on Auto, so the boiler switches Comfort / Eco itself – the hub writes the setpoint next to it. Keep one.": "⚠ Časové programy sú na Auto, takže kotol prepína Komfort / Úsporný sám – hub zapisuje nastavenie vedľa neho. Ponechajte jedno.",
+  "⚠ time programs on Auto – the boiler switches Comfort / Eco too; keep one": "⚠ časové programy na Auto – kotol tiež prepína Komfort / Úsporný; ponechajte jedno",
+  "prices, cylinder, screed, floor area, fault language": "ceny, zásobník, poter, plocha, jazyk porúch"
 }

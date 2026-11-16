@@ -48,6 +48,49 @@ globals:
 # lambda + global: an empty copy is NAN = "unknown" in Home Assistant (a template number with initial_value
 # would start at min_value and look as if it had been copied)
 number:
+  # 1.11.18: night window start / end hour (2702 / 2703), written to the emulated panel - see hub_m_night_set_on
+  - platform: template
+    id: hub_m_night_set_from
+    name: "${n_hub_m_night_set_from}"
+    icon: mdi:clock-start
+    unit_of_measurement: "h"
+    min_value: 0
+    max_value: 23
+    step: 1
+    mode: box
+    update_interval: 60s
+    lambda: |-
+      int v = id(dd_emu29_store)[2];
+      if (v < 0 || v > 23) return {};
+      return (float) v;
+    set_action:
+      - lambda: |-
+          if (!id(dd_emulate_29_diag) && id(dd_bs_panel_online).state) { ESP_LOGW("hub_menu", "Night window: a physical zone 1 panel owns 2702"); return; }
+          id(dd_emu29_store)[2] = (int16_t) x;
+          id(hub_m_night_set_from).publish_state(x);
+          id(hub_m_night_from).update();
+          ESP_LOGW("hub_menu", "Night window start %d:00 (2702)", (int) x);
+  - platform: template
+    id: hub_m_night_set_to
+    name: "${n_hub_m_night_set_to}"
+    icon: mdi:clock-end
+    unit_of_measurement: "h"
+    min_value: 0
+    max_value: 23
+    step: 1
+    mode: box
+    update_interval: 60s
+    lambda: |-
+      int v = id(dd_emu29_store)[3];
+      if (v < 0 || v > 23) return {};
+      return (float) v;
+    set_action:
+      - lambda: |-
+          if (!id(dd_emulate_29_diag) && id(dd_bs_panel_online).state) { ESP_LOGW("hub_menu", "Night window: a physical zone 1 panel owns 2703"); return; }
+          id(dd_emu29_store)[3] = (int16_t) x;
+          id(hub_m_night_set_to).publish_state(x);
+          id(hub_m_night_to).update();
+          ESP_LOGW("hub_menu", "Night window end %d:00 (2703)", (int) x);
   - platform: template
     id: hub_m_r04
     name: "${n_hub_m_r04}"
@@ -234,6 +277,27 @@ switch:
     entity_category: config
     optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
+  # 1.11.18: the night window is writable - the boiler reads 2701-2703 from the emulated panel and adopts them
+  # (tested on a HERCULES PRO: 21-04 set from the hub appeared in the boiler menu and stayed). Kept in dd_emu29_store,
+  # restored after a restart; with a physical zone 1 panel the panel owns the registers, so the setters do nothing.
+  - platform: template
+    id: hub_m_night_set_on
+    name: "${n_hub_m_night_set_on}"
+    icon: mdi:weather-night
+    lambda: |-
+      int v = id(dd_emu29_store)[1];
+      if (v == -32768) return {};
+      return v != 0;
+    turn_on_action:
+      - lambda: |-
+          if (!id(dd_emulate_29_diag) && id(dd_bs_panel_online).state) { ESP_LOGW("hub_menu", "Night window: a physical zone 1 panel owns 2701"); return; }
+          id(dd_emu29_store)[1] = 1;
+          ESP_LOGW("hub_menu", "Night window on (2701 = 1)");
+    turn_off_action:
+      - lambda: |-
+          if (!id(dd_emulate_29_diag) && id(dd_bs_panel_online).state) { ESP_LOGW("hub_menu", "Night window: a physical zone 1 panel owns 2701"); return; }
+          id(dd_emu29_store)[1] = 0;
+          ESP_LOGW("hub_menu", "Night window off (2701 = 0)");
 
 # 1.11.16: the night window the boiler keeps in the zone 1 panel (0x29 W 2701 on / 2702 start hour / 2703 end hour,
 # HERCULES PRO), known only while the hub emulates the panel (dd_emu29_store of dd_engine; empty until the boiler writes

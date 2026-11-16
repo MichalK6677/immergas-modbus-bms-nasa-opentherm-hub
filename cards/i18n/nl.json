@@ -2500,5 +2500,14 @@
   "During DHW (D09) the hub takes the DHW flow – the cylinder circuit usually has a different resistance. Empty = the value above for both.": "Tijdens SWW (D09) gebruikt de hub het SWW-debiet – het boilercircuit heeft meestal een andere weerstand. Leeg = de waarde hierboven voor beide.",
   "Assumed flow DHW (instead of D14)": "Aangenomen debiet SWW (in plaats van D14)",
   "The DHW electric heater is on no bus. Enter the total power of the heaters fitted (0 = none) – with D09 on, the compressor stopped and the cylinder below the setpoint the hub shows “Electric heater: DHW” and adds this power to the DHW electricity and heat (COP 1).": "Het SWW-element zit op geen enkele bus. Vul het totale vermogen van de geplaatste elementen in (0 = geen) – bij D09, stilstaande compressor en boiler onder de setpoint toont de hub „Elektrisch element: SWW” en telt dit vermogen bij SWW-stroom en -warmte (COP 1).",
-  "Assumed DHW heater power": "Aangenomen vermogen SWW-element"
+  "Assumed DHW heater power": "Aangenomen vermogen SWW-element",
+  "Zone 1 time program (zones + DHW)": "Tijdprogramma zone 1 (zones + SWW)",
+  "⚠ the boiler's calendar, and the hub also writes the setpoint (Comfort / Eco by schedule) – switch one off": "⚠ ketelkalender, en de hub schrijft ook het setpoint (Comfort / Eco volgens programma) – zet er één uit",
+  "by the boiler calendar": "volgens de ketelkalender",
+  "hub schedule (Comfort / Eco)": "hub-programma (Comfort / Eco)",
+  "DHW time program (shared with the zones)": "SWW-tijdprogramma (gedeeld met de zones)",
+  "off – the boiler's calendar switches the DHW setpoint (time programs Auto)": "uit – de ketelkalender schakelt het SWW-setpoint (tijdprogramma's Auto)",
+  "⚠ Time programs are on Auto, so the boiler switches Comfort / Eco itself – the hub writes the setpoint next to it. Keep one.": "⚠ De tijdprogramma's staan op Auto, dus de ketel schakelt Comfort / Eco zelf – de hub schrijft het setpoint ernaast. Houd er één.",
+  "⚠ time programs on Auto – the boiler switches Comfort / Eco too; keep one": "⚠ tijdprogramma's op Auto – de ketel schakelt Comfort / Eco ook; houd er één",
+  "prices, cylinder, screed, floor area, fault language": "prijzen, boiler, dekvloer, oppervlak, storingstaal"
 }

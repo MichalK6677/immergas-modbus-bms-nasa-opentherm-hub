@@ -353,7 +353,7 @@ class ImmergasLinksCard extends HubCard {
   }
 
   static styles = [HubCard.styles, css`
-    :host { container-type: inline-size; }
+    :host { display: block; container-type: inline-size; }
     /* two rows filled column by column: each pair stands one under the other */
     /* four pairs in a row (a bus and the device under it); two pairs per row on a narrow card */
     .links { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: 1fr; gap: 8px; }

@@ -184,7 +184,8 @@ class ImmergasSetpointsCard extends HubCard {
         ${dd ? html`${this.numRow("dhw_comfort_dd", "mdi:sofa-outline", this.t("Komfort", "Comfort"), 1)}
           ${this.numRow("dhw_eco_dd", "mdi:leaf", this.t("Eko", "Eco"), 1)}
           ${this.eid("dhw_sched") ? this.toggles([["dhw_sched", "mdi:calendar-clock", "peach", this.t("Komfort / Eko wg harmonogramu CWU", "Comfort / Eco by the DHW schedule"),
-            this.t("w przedziałach kalendarza CWU Komfort, poza nimi Eko", "Comfort inside the DHW calendar ranges, Eco outside"), true]]) : nothing}`
+            this.dhwCtl() === "both" ? this.t("⚠ programy czasowe na Auto – piec też przełącza Komfort / Eko; zostaw jedno", "⚠ time programs on Auto – the boiler switches Comfort / Eco too; keep one")
+              : this.t("w przedziałach kalendarza CWU Komfort, poza nimi Eko", "Comfort inside the DHW calendar ranges, Eco outside"), true]]) : nothing}`
           : html`${this.helperRow(this.config.dhw_comfort, "mdi:sofa-outline", this.t("Komfort", "Comfort"))}
           ${this.helperRow(this.config.dhw_eco, "mdi:leaf", this.t("Eko", "Eco"))}`}
         ${dd || [this.config.dhw_comfort, this.config.dhw_eco].some((o: any) => typeof o === "string" && o.startsWith("input_number.") && this.hass.states[o]) ? nothing

@@ -67,7 +67,7 @@ Verified on **three buses** (D+/D-, T-/T+, NASA) at standby and during a forced 
 | 2001 | **Status flags** (bitfield): **bit 3 = heat-pump module present** (clears with A11 = OFF; always 1 in normal operation); **bit 0 (8→9) = DHW request pending** — set ~9 min before every DHW cycle, cleared when the 3-way valve switches to DHW (15/15 cases); **bit 2 (8→12) = boiler anomaly active (2100 ≠ 0)** — matches to the second both E193 "Device in test mode" (service menu M) and E121 "Zone 1 panel missing". Dominus: `mb-water-request` | bit 0 = D09 (DHW request) | bitfield | CONFIRMED |
 | 2010 | Zone status / phase (bit 2 manual, bit 3 heat request, bit 6 comfort, bit 7 economy; **value 1 = bit 0 during air purge U50**, together with anomaly 139 "air purge in progress", 2000 → 0 and 2101 = 2) | — | bitfield | CONFIRMED |
 | 2015 / 2016 / 2017 | Zone setpoint / max / offset | — | ×0.1 °C | CONFIRMED |
-| **2090** | **Time-program state** (boiler reply to 2294, ~5 s later): **4 = manual (bit 2), 64 = auto / comfort phase (bit 6), 128 = auto / economy phase (bit 7)** (64 → 128 seen 3 s after the boiler clock was moved past the end of a comfort window). Whether it tracks the Zone 1 CH or the DHW program is still open | — | bitfield | CONFIRMED (link), CAND. (scope) |
+| **2090** | **Time-program state** (boiler reply to 2294, ~5 s later): **4 = manual (bit 2), 64 = auto / comfort phase (bit 6), 128 = auto / economy phase (bit 7)** (64 → 128 seen 3 s after the boiler clock was moved past the end of a comfort window). A HERCULES PRO sends **66 = 64 | 2** in auto – bit 1 is masked out. It follows 2294, which on a HERCULES PRO is the only time-program switch: the boiler menu "DHW time program" mirrors it and snaps back within 6–10 s | — | bitfield | CONFIRMED (link), CAND. (scope) |
 | 2100 | Fault code (0 = none, e.g. 142 = Dominus missing) | — | enum | CONFIRMED |
 | 2218 / 2219 | Zone max / offset (copies) | — | ×0.1 °C | CONFIRMED |
 | 2293 | DHW temperature (copy) | — | ×0.1 °C | CONFIRMED |
@@ -96,7 +96,7 @@ Verified on **three buses** (D+/D-, T-/T+, NASA) at standby and during a forced 
 | 2015–2017 | Setpoint / max / offset | CONFIRMED |
 | 2095, 2290–2292 | DHW setpoint 2095 (D05); 2290 = DHW Comfort, 2291 = DHW Eco, 2292 = copy of 2095 – the panel owns 2290 / 2291 | CONFIRMED |
 | 2103 | constant 0 | ? |
-| **2294** | **Panel "time programs active"**: −1 = not set, **0 = off (manual), 1 = auto**. Verified both ways; on panel connect the boiler writes 0 | CONFIRMED |
+| **2294** | **Panel "time programs active"**: −1 = not set, **0 = off (manual), 1 = auto**. Verified both ways; on panel connect the boiler writes 0. On a HERCULES PRO it switches the zone **and the DHW** programs (calendars 2310–2347, DHW days 2490–2496 stay in the boiler) | CONFIRMED |
 | **6105** | **Panel "room-probe modulation" setting** (Service → Zone definition): −1 = not set (fresh panel), **0 = NO, 1 = YES**. On panel connect the boiler writes 0. Verified YES → 1 and NO → 0 | CONFIRMED |
 | **6107** | **Panel "dew-point setpoint correction"** (1 = on, 0 = off). Turning it off and on again on the panel switched 6107 1 → 0 → 1 (both directions verified) | CONFIRMED |
 | 2210 / 2211 | Comfort / Eco heating | CONFIRMED |
@@ -106,7 +106,7 @@ Verified on **three buses** (D+/D-, T-/T+, NASA) at standby and during a forced 
 | 2410–2416 | Day → calendar — Zone 1 | CONFIRMED |
 | 2490–2496 | Day → calendar — DHW | CONFIRMED |
 | 2707 | Eco cooling (copy) | CONFIRMED |
-| 2295, 2701–2706, 2708, 6106 | MAGIS HERCULES PRO only: panel settings the boiler writes and reads back. **Night window: 2701 = on (1) / off (0), 2702 / 2703 = start / end hour (0–23)** – the times stay when it is off; hub: *Night window on / start / end (boiler)*. 2704 / 2705 / 2706 look like a second window of the same form, but the HERCULES PRO menu has only one (seen once as 22 / 8, later 0 / 0); 2708 (190), 2295 (−1), 6106 (50) not decoded | 2701–2703 CONFIRMED, rest CAND. |
+| 2295, 2701–2706, 2708, 6106 | MAGIS HERCULES PRO only: panel settings the boiler writes and reads back. **Night window: 2701 = on (1) / off (0), 2702 / 2703 = start / end hour (0–23)** – the times stay when it is off; hub: *Night window on / start / end (boiler)*. **Writable**: the boiler reads them from the emulated panel and adopts them (21–04 set from the hub appeared in the HERCULES PRO menu and stayed) – hub: *Night window on / start hour / end hour (set)*. 2704 / 2705 / 2706 look like a second window of the same form, but the HERCULES PRO menu has only one (seen once as 22 / 8, later 0 / 0); 2708 (190), 2295 (−1), 6106 (50) not decoded | 2701–2703 CONFIRMED, rest CAND. |
 | 3042 | Panel firmware version (201 = 2.01) | CONFIRMED |
 
 **Set-flow 2217 is read only from the Dominus (0x33)** — from the panel the boiler reads 2214–2216 and 2218–2219, deliberately skipping 2217, so a panel (physical or emulated) cannot control set-flow.

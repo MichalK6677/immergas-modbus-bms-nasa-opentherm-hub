@@ -2500,5 +2500,14 @@
   "During DHW (D09) the hub takes the DHW flow – the cylinder circuit usually has a different resistance. Empty = the value above for both.": "Durante l'ACS (D09) l'hub usa la portata ACS – il circuito del bollitore ha di solito un'altra resistenza. Vuoto = il valore sopra per entrambi.",
   "Assumed flow DHW (instead of D14)": "Portata presunta ACS (al posto di D14)",
   "The DHW electric heater is on no bus. Enter the total power of the heaters fitted (0 = none) – with D09 on, the compressor stopped and the cylinder below the setpoint the hub shows “Electric heater: DHW” and adds this power to the DHW electricity and heat (COP 1).": "La resistenza ACS non è su nessun bus. Inserisci la potenza totale delle resistenze installate (0 = nessuna): con D09 attivo, compressore fermo e bollitore sotto il setpoint l'hub mostra «Resistenza: ACS» e aggiunge questa potenza all'elettricità e al calore ACS (COP 1).",
-  "Assumed DHW heater power": "Potenza presunta resistenza ACS"
+  "Assumed DHW heater power": "Potenza presunta resistenza ACS",
+  "Zone 1 time program (zones + DHW)": "Programma orario zona 1 (zone + ACS)",
+  "⚠ the boiler's calendar, and the hub also writes the setpoint (Comfort / Eco by schedule) – switch one off": "⚠ calendario della caldaia, e anche l'hub scrive il setpoint (Comfort / Economy da programma) – disattivane uno",
+  "by the boiler calendar": "secondo il calendario della caldaia",
+  "hub schedule (Comfort / Eco)": "programma dell'hub (Comfort / Economy)",
+  "DHW time program (shared with the zones)": "Programma orario ACS (condiviso con le zone)",
+  "off – the boiler's calendar switches the DHW setpoint (time programs Auto)": "off – il calendario della caldaia cambia il setpoint ACS (programmi orari Auto)",
+  "⚠ Time programs are on Auto, so the boiler switches Comfort / Eco itself – the hub writes the setpoint next to it. Keep one.": "⚠ I programmi orari sono su Auto, quindi la caldaia cambia Comfort / Economy da sola – l'hub scrive il setpoint in parallelo. Tienine uno.",
+  "⚠ time programs on Auto – the boiler switches Comfort / Eco too; keep one": "⚠ programmi orari su Auto – anche la caldaia cambia Comfort / Economy; tienine uno",
+  "prices, cylinder, screed, floor area, fault language": "prezzi, accumulo, massetto, superficie, lingua anomalie"
 }

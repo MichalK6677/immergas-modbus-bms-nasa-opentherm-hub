@@ -403,6 +403,22 @@ export abstract class HubCard extends LitElement {
     return !!a && [...(a.no_reply ?? []), ...(a.unsupported ?? [])].includes(id);
   }
 
+  /** 1.11.18: the appliance's time programs switch (0x29 2294, served by the hub as the zone 1 panel): the boiler runs
+   *  its calendars - zones AND DHW - only when it is Auto; its own "DHW time program" menu only mirrors it.
+   *  true = Auto, false = Manual, null = not known (no select, Dominus, OpenTherm) */
+  protected get progAuto(): boolean | null {
+    if (this.dominus || this.ot || !this.eid("prog_mode") || this.bad("prog_mode")) return null;
+    const o: string[] = this.attr("prog_mode", "options") ?? [];
+    return o.length === 2 ? this.s("prog_mode") === o[1] : null;
+  }
+
+  /** DHW Comfort / Eco: who sets the DHW setpoint - the boiler's calendar (2294 Auto), the hub's calendar (dhw_sched),
+   *  both (a conflict), or nobody (a fixed setpoint) */
+  protected dhwCtl(): "boiler" | "hub" | "both" | "fixed" {
+    const pa = this.progAuto === true, hs = this.on("dhw_sched");
+    return pa && hs ? "both" : pa ? "boiler" : hs ? "hub" : "fixed";
+  }
+
   /** gas boiler present (Magis Combo): option `variant` ("combo" / "pro"), else from the system model (D61); unknown = yes */
   protected get hasGas(): boolean {
     const v = this.config.variant;
@@ -687,7 +703,8 @@ export abstract class HubCard extends LitElement {
     .rr ha-icon { --mdc-icon-size: 17px; flex: none; margin-top: 1px; }
     .rl { font-size: 11.5px; font-weight: 800; }
     .rs { font-size: 10px; opacity: var(--ih-o6, .6); line-height: 1.3; }
-    :host { ${unsafeCSS(paletteCss)} --ih-ov-rgb: 255,255,255; }
+    /* 1.11.18: a custom element is display: inline by default - zero width, so no @container rule would ever match */
+    :host { display: block; ${unsafeCSS(paletteCss)} --ih-ov-rgb: 255,255,255; }
     :host([ih-forcelight]) { --ha-card-background: #fff; --card-background-color: #fff; --primary-text-color: #141414; --secondary-text-color: #5e5e5e;
       --disabled-text-color: #bdbdbd; --divider-color: #0000001f; --secondary-background-color: #e5e5e5; --ha-card-border-color: #e0e0e0; color: #141414; }
     :host([ih-dark]) { --ha-card-background: #1c1c1c; --card-background-color: #1c1c1c; --primary-text-color: #e1e1e1; --secondary-text-color: #9b9b9b;
@@ -766,7 +783,7 @@ export abstract class HubCard extends LitElement {
 
 /** registers a card element + card picker entry */
 /** this bundle's version (also in package.json) */
-export const VERSION = "0.93.5";
+export const VERSION = "0.93.6";
 
 // The bundle can be loaded twice: the hub cards resource and the copy shipped with the Dominus integration, in any
 // order. A custom element can be defined only once, so every bundle (0.85.0+) queues its elements on a shared window

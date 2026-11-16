@@ -11180,8 +11180,50 @@
   ]
  },
  {
+  "en": "Zone 1 time program (zones + DHW)",
+  "pl": "Program czasowy Strefy 1 (strefy + CWU)",
+  "files": [
+   "mode.ts"
+  ]
+ },
+ {
   "en": "Zone 1 CH time program",
   "pl": "Program czasowy CO Strefy 1",
+  "files": [
+   "mode.ts"
+  ]
+ },
+ {
+  "en": "⚠ the boiler's calendar, and the hub also writes the setpoint (Comfort / Eco by schedule) – switch one off",
+  "pl": "⚠ kalendarz pieca, a hub też zapisuje nastawę (Komfort / Eko wg harmonogramu) – wyłącz jedno",
+  "files": [
+   "mode.ts"
+  ]
+ },
+ {
+  "en": "by the boiler calendar",
+  "pl": "wg kalendarza pieca",
+  "files": [
+   "mode.ts"
+  ]
+ },
+ {
+  "en": "hub schedule (Comfort / Eco)",
+  "pl": "harmonogram huba (Komfort / Eko)",
+  "files": [
+   "mode.ts"
+  ]
+ },
+ {
+  "en": "fixed setpoint",
+  "pl": "stała nastawa",
+  "files": [
+   "mode.ts"
+  ]
+ },
+ {
+  "en": "DHW time program (shared with the zones)",
+  "pl": "Program czasowy CWU (wspólny ze strefami)",
   "files": [
    "mode.ts"
   ]
@@ -11192,13 +11234,6 @@
   "files": [
    "mode.ts",
    "setpoints.ts"
-  ]
- },
- {
-  "en": "fixed setpoint",
-  "pl": "stała nastawa",
-  "files": [
-   "mode.ts"
   ]
  },
  {
@@ -13546,8 +13581,22 @@
   ]
  },
  {
+  "en": "off – the boiler's calendar switches the DHW setpoint (time programs Auto)",
+  "pl": "wył. – nastawę CWU zmienia kalendarz pieca (programy czasowe Auto)",
+  "files": [
+   "schedule.ts"
+  ]
+ },
+ {
   "en": "off – the boiler keeps one DHW setpoint",
   "pl": "wył. – piec trzyma jedną nastawę CWU",
+  "files": [
+   "schedule.ts"
+  ]
+ },
+ {
+  "en": "⚠ Time programs are on Auto, so the boiler switches Comfort / Eco itself – the hub writes the setpoint next to it. Keep one.",
+  "pl": "⚠ Programy czasowe są na Auto, więc piec sam przełącza Komfort / Eko – hub zapisuje nastawę obok niego. Zostaw jedno.",
   "files": [
    "schedule.ts"
   ]
@@ -13800,6 +13849,13 @@
  {
   "en": "Hot water profiles",
   "pl": "Profile ciepłej wody",
+  "files": [
+   "setpoints.ts"
+  ]
+ },
+ {
+  "en": "⚠ time programs on Auto – the boiler switches Comfort / Eco too; keep one",
+  "pl": "⚠ programy czasowe na Auto – piec też przełącza Komfort / Eko; zostaw jedno",
   "files": [
    "setpoints.ts"
   ]
@@ -15450,6 +15506,13 @@
  {
   "en": "prices, cylinder, gas estimate, screed, floor area, fault language",
   "pl": "ceny, zasobnik, szacowanie gazu, posadzka, powierzchnia, język błędów",
+  "files": [
+   "settings.ts"
+  ]
+ },
+ {
+  "en": "prices, cylinder, screed, floor area, fault language",
+  "pl": "ceny, zasobnik, posadzka, powierzchnia, język błędów",
   "files": [
    "settings.ts"
   ]

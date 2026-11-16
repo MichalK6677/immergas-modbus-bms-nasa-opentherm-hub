@@ -174,7 +174,10 @@ class ImmergasScheduleCard extends HubCard {
           : this.t("wył. – Eko obniża zasilanie (krzywą albo nastawę)", "off – Eco lowers the flow (the curve or the setpoint)"), true]]) : nothing}
       ${cwu && ddDhw && this.eid("dhw_sched") ? this.toggles([["dhw_sched", "mdi:calendar-clock", "peach", this.t("Komfort / Eko wg harmonogramu CWU", "Comfort / Eco by the DHW schedule"),
         this.on("dhw_sched") ? this.t("teraz ", "now ") + (this.bad("dhw_phase") ? "–" : this.txt("dhw_phase")) + " · " + this.t("nastawa", "setpoint") + " " + this.f(this.n("dhw_set"), 1, 1) + " °C"
+          : this.progAuto ? this.t("wył. – nastawę CWU zmienia kalendarz pieca (programy czasowe Auto)", "off – the boiler's calendar switches the DHW setpoint (time programs Auto)")
           : this.t("wył. – piec trzyma jedną nastawę CWU", "off – the boiler keeps one DHW setpoint"), true]]) : nothing}
+      ${cwu && ddDhw && this.dhwCtl() === "both" ? html`<div class="note">${this.t("⚠ Programy czasowe są na Auto, więc piec sam przełącza Komfort / Eko – hub zapisuje nastawę obok niego. Zostaw jedno.",
+        "⚠ Time programs are on Auto, so the boiler switches Comfort / Eco itself – the hub writes the setpoint next to it. Keep one.")}</div>` : nothing}
       <div class="note">${view === "week"
         ? this.t("Wybierz kalendarz dla każdego dnia; zakresy edytujesz w polu poniżej. Zakresy kalendarzy są wspólne dla CO i CWU, przypisanie dni — osobne.",
           "Pick a calendar for each day; edit the ranges below. Calendar ranges are shared by CH and DHW, the day assignment is separate.")

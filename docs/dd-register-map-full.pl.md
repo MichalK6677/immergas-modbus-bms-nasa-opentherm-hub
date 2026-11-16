@@ -67,7 +67,7 @@ Sprawdzone na **trzech magistralach** (D+/D-, T-/T+, NASA) w postoju i podczas w
 | 2001 | **Flagi stanu** (pole bitowe): **bit 3 = moduł pompy ciepła obecny** (gaśnie przy A11 = OFF; w normalnej pracy zawsze 1); **bit 0 (8→9) = żądanie CWU w oczekiwaniu** – ustawiany ~9 min przed każdym cyklem CWU, kasowany, gdy zawór 3-drogowy przełączy się na CWU (15/15 przypadków); **bit 2 (8→12) = aktywna anomalia kotła (2100 ≠ 0)** – zgadza się co do sekundy zarówno z E193 „Urządzenie w trybie testowym” (menu serwisowe M), jak i z E121 „Brak panelu strefy 1”. Dominus: `mb-water-request` | bit 0 = D09 (żądanie CWU) | pole bitowe | POTWIERDZONE |
 | 2010 | Stan / faza strefy (bit 2 ręczny, bit 3 żądanie grzania, bit 6 komfort, bit 7 eko; **wartość 1 = bit 0 podczas odpowietrzania U50**, razem z anomalią 139 „odpowietrzanie w toku”, 2000 → 0 i 2101 = 2) | — | pole bitowe | POTWIERDZONE |
 | 2015 / 2016 / 2017 | Nastawa / maks. / offset strefy | — | ×0,1 °C | POTWIERDZONE |
-| **2090** | **Stan programu czasowego** (odpowiedź kotła na 2294, ~5 s później): **4 = ręczny (bit 2), 64 = auto / faza komfort (bit 6), 128 = auto / faza eko (bit 7)** (64 → 128 widziane 3 s po przestawieniu zegara kotła za koniec okna komfortu). Otwarte pozostaje, czy śledzi program CO strefy 1, czy program CWU | — | pole bitowe | POTWIERDZONE (powiązanie), KAND. (zakres) |
+| **2090** | **Stan programu czasowego** (odpowiedź kotła na 2294, ~5 s później): **4 = ręczny (bit 2), 64 = auto / faza komfort (bit 6), 128 = auto / faza eko (bit 7)** (64 → 128 widziane 3 s po przestawieniu zegara kotła za koniec okna komfortu). HERCULES PRO wysyła w auto **66 = 64 | 2** – bit 1 jest maskowany. Idzie za 2294, który w HERCULES PRO jest jedynym przełącznikiem programów: pozycja menu kotła „Program czasowy CWU” tylko go odzwierciedla i wraca po 6–10 s | — | pole bitowe | POTWIERDZONE (powiązanie), KAND. (zakres) |
 | 2100 | Kod błędu (0 = brak, np. 142 = brak Dominusa) | — | enum | POTWIERDZONE |
 | 2218 / 2219 | Maks. / offset strefy (kopie) | — | ×0,1 °C | POTWIERDZONE |
 | 2293 | Temperatura CWU (kopia) | — | ×0,1 °C | POTWIERDZONE |
@@ -96,7 +96,7 @@ Sprawdzone na **trzech magistralach** (D+/D-, T-/T+, NASA) w postoju i podczas w
 | 2015–2017 | Nastawa / maks. / offset | POTWIERDZONE |
 | 2095, 2290–2292 | Nastawa CWU 2095 (D05); 2290 = CWU Komfort, 2291 = CWU Eko, 2292 = kopia 2095 – 2290 / 2291 należą do panelu | POTWIERDZONE |
 | 2103 | stałe 0 | ? |
-| **2294** | **„Programy czasowe aktywne” w panelu**: −1 = nie ustawiono, **0 = wyłączone (ręczny), 1 = auto**. Sprawdzone w obie strony; po podłączeniu panelu kocioł zapisuje 0 | POTWIERDZONE |
+| **2294** | **„Programy czasowe aktywne” w panelu**: −1 = nie ustawiono, **0 = wyłączone (ręczny), 1 = auto**. Sprawdzone w obie strony; po podłączeniu panelu kocioł zapisuje 0. W HERCULES PRO przełącza programy stref **i CWU** (kalendarze 2310–2347 i dni CWU 2490–2496 zostają w kotle) | POTWIERDZONE |
 | **6105** | **Ustawienie panelu „modulacja sondą pokojową”** (Serwis → Definicja strefy): −1 = nie ustawiono (świeży panel), **0 = NIE, 1 = TAK**. Po podłączeniu panelu kocioł zapisuje 0. Sprawdzone TAK → 1 i NIE → 0 | POTWIERDZONE |
 | **6107** | **„Korekta nastawy wg punktu rosy” w panelu** (1 = włączona, 0 = wyłączona). Wyłączenie i ponowne włączenie na panelu przełączyło 6107 1 → 0 → 1 (sprawdzone w obie strony) | POTWIERDZONE |
 | 2210 / 2211 | Komfort / Eko grzania | POTWIERDZONE |
@@ -106,7 +106,7 @@ Sprawdzone na **trzech magistralach** (D+/D-, T-/T+, NASA) w postoju i podczas w
 | 2410–2416 | Dzień → kalendarz — strefa 1 | POTWIERDZONE |
 | 2490–2496 | Dzień → kalendarz — CWU | POTWIERDZONE |
 | 2707 | Eko chłodzenia (kopia) | POTWIERDZONE |
-| 2295, 2701–2706, 2708, 6106 | Tylko MAGIS HERCULES PRO: ustawienia panelu, które kocioł zapisuje i odczytuje z powrotem. **Okno nocne: 2701 = włączone (1) / wyłączone (0), 2702 / 2703 = godzina początku / końca (0–23)** – godziny zostają po wyłączeniu; hub: *Okno nocne włączone / start / koniec (piec)*. 2704 / 2705 / 2706 wyglądają na drugie okno w tej samej postaci, ale menu HERCULES PRO ma tylko jedno (raz widziane jako 22 / 8, potem 0 / 0); 2708 (190), 2295 (−1), 6106 (50) nierozszyfrowane | 2701–2703 POTWIERDZONE, reszta KAND. |
+| 2295, 2701–2706, 2708, 6106 | Tylko MAGIS HERCULES PRO: ustawienia panelu, które kocioł zapisuje i odczytuje z powrotem. **Okno nocne: 2701 = włączone (1) / wyłączone (0), 2702 / 2703 = godzina początku / końca (0–23)** – godziny zostają po wyłączeniu; hub: *Okno nocne włączone / start / koniec (piec)*. **Z zapisem**: kocioł odczytuje je z emulowanego panelu i przyjmuje (21–04 ustawione z huba pojawiło się w menu HERCULES PRO i zostało) – hub: *Okno nocne włączone / godzina startu / godzina końca (ustaw)*. 2704 / 2705 / 2706 wyglądają na drugie okno w tej samej postaci, ale menu HERCULES PRO ma tylko jedno (raz widziane jako 22 / 8, potem 0 / 0); 2708 (190), 2295 (−1), 6106 (50) nierozszyfrowane | 2701–2703 POTWIERDZONE, reszta KAND. |
 | 3042 | Wersja firmware panelu (201 = 2.01) | POTWIERDZONE |
 
 **Set-flow 2217 jest czytany tylko z Dominusa (0x33)** — z panelu kocioł czyta 2214–2216 i 2218–2219, celowo pomijając 2217, więc panel (fizyczny czy emulowany) nie może sterować set-flow.

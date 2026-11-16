@@ -1,7 +1,7 @@
 // "Teraz / Now": fault and defrost banners, the unit hero (mode, Hz, flow/return, COP) and four tiles.
 import { Key } from "../names";
 import { HubCard, html, css, nothing, c, ca, box, register, noFault } from "../base";
-import { Seg, Pt, BAD, segments, typical, median, isIdle, isDhw, isCool, isDefrost, phaseCol, phaseIcon, dur, clock, nextAt, points, dhwPeriods, dhwHeatingNow } from "./timers";
+import { Seg, Pt, BAD, segments, typical, median, isIdle, isDhw, isCool, isDefrost, parseState, phaseCol, phaseIcon, dur, clock, nextAt, points, dhwPeriods, dhwHeatingNow } from "./timers";
 
 const H = 3600e3, WIN = 6 * H, LEG_T = 60;
 const tempCol = (v: number) => isNaN(v) ? "overlay1" : v < 0 ? "sapphire" : v < 10 ? "sky" : v < 18 ? "teal" : v < 24 ? "green" : v < 28 ? "yellow" : v < 32 ? "peach" : "red";
@@ -171,13 +171,15 @@ class ImmergasNowCard extends HubCard {
 
     // 5) last 6 h as a strip: shows the on/off rhythm of the compressor and the boiler
     const w0 = now - WIN, win = st.filter((g) => g.t1 > w0).map((g) => ({ ...g, t0: Math.max(g.t0, w0) }));
-    // compressor runs: working segments (CH, DHW, defrost) joined across a stop shorter than 150 s - the valve reversal
-    // before and after a defrost is not a new start
-    const blocks: { t0: number; t1: number }[] = [];
+    // compressor runs: working segments (CH, DHW, defrost). 1.11.18: joined across a stop shorter than 150 s only next
+    // to a defrost (the valve reversal before and after it is not a new start); otherwise only across a gap under 20 s
+    // (a state change), so short-cycling at low load counts every start. The heater or the gas boiler alone is no run.
+    const blocks: { t0: number; t1: number; df: boolean }[] = [];
     for (const g of win) {
-      if (isIdle(g.s)) continue;
-      const b = blocks[blocks.length - 1];
-      if (b && g.t0 - b.t1 < 150e3) b.t1 = g.t1; else blocks.push({ t0: g.t0, t1: g.t1 });
+      const src = parseState(g.s).src;
+      if (isIdle(g.s) || src === "heater" || src === "boiler") continue;
+      const b = blocks[blocks.length - 1], df = src === "defrost";
+      if (b && g.t0 - b.t1 < ((b.df || df) ? 150e3 : 20e3)) { b.t1 = g.t1; b.df = df; } else blocks.push({ t0: g.t0, t1: g.t1, df });
     }
     const running = win.length > 0 && !isIdle(win[win.length - 1].s);
     const runs = blocks.filter((b) => b.t0 > w0), pauses = blocks.slice(1).map((b, i) => b.t0 - blocks[i].t1).filter((p, i) => blocks[i].t1 > w0);

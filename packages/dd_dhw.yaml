@@ -137,6 +137,9 @@ interval:
     then:
       - lambda: |-
           if (!id(dd_dhw_comfort_eco).state) return;
+          // 1.11.18: not in the first 2 min after boot - right after a restart the clock (time zone) and the restored
+          // calendars may not be final yet, and one wrong pass wrote Eco to D05 for a whole cycle (HERCULES PRO)
+          if (millis() < 120000UL) return;
           // 1.2.1: a physical zone 1 panel runs its own DHW program - the hub must not write D05 next to it
           if (!id(dd_emulate_29_diag) && id(dd_bs_panel_online).state) {
             if (id(dd_dhw_phase_last) != -2) {

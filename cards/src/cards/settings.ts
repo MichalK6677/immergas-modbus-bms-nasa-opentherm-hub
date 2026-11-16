@@ -438,7 +438,8 @@ class ImmergasSettingsCard extends HubCard {
       : part === "offline" ? this.t("Parametry pieca (offline)", "Boiler parameters (offline)") : this.t("Ustawienia", "Settings");
     const sum = this.mtx ? (part === "online" ? this.t("praca z hubem, programy Komfort / Eko, Lato / Zima, przegląd", "running with the hub, Comfort / Eco programs, summer / winter, service")
         : this.t("parametry instalatora (odczyt), krzywa 9, oprogramowanie", "installer parameters (read only), curve 9, software"))
-      : !this.dominus ? (part === "online" ? this.t("ceny, zasobnik, szacowanie gazu, posadzka, powierzchnia, język błędów", "prices, cylinder, gas estimate, screed, floor area, fault language")
+      : !this.dominus ? (part === "online" ? (this.hasGas ? this.t("ceny, zasobnik, szacowanie gazu, posadzka, powierzchnia, język błędów", "prices, cylinder, gas estimate, screed, floor area, fault language")
+          : this.t("ceny, zasobnik, posadzka, powierzchnia, język błędów", "prices, cylinder, screed, floor area, fault language"))
         : part === "offline" ? this.t("U12/U13, P16/P17/P13, limit podłogi, tania taryfa, R02/R03, R10/R11, P07", "U12/U13, P16/P17/P13, floor limit, cheap tariff, R02/R03, R10/R11, P07")
         : this.t("ceny, zasobnik, tryb nocny, legionella…", "prices, cylinder, night mode, legionella…"))
       : part === "online" ? (this.gbx ? this.t("praca z hubem (BMS), krzywa, Eko, limity, programy CWU, przegląd", "running with the hub (BMS), curve, Eco, limits, DHW programs, service")
@@ -479,13 +480,13 @@ class ImmergasSettingsCard extends HubCard {
       ${open && !this.dominus && !this.mtx && on ? html`
         <div class="grp">${this.t("Ceny energii", "Energy prices")}</div>
         ${this.numRow("price_elec", "mdi:flash", this.t("Cena prądu", "Electricity price"), 3)}
-        ${this.numRow("price_gas", "mdi:fire", this.t("Cena gazu", "Gas price"), 2)}
+        ${this.hasGas ? this.numRow("price_gas", "mdi:fire", this.t("Cena gazu", "Gas price"), 2) : nothing}
         <div class="grp">${this.t("Ciepła woda", "Hot water")}</div>
         ${this.numRow("tank_vol", "mdi:water-boiler", this.t("Pojemność zasobnika CWU", "DHW cylinder capacity"), 0)}
         ${this.numRow("boost_min", "mdi:timer-play-outline", this.t("Czas wymuszenia CWU", "DHW boost duration"), 0)}
-        <div class="grp">${this.t("Szacowanie gazu", "Gas estimate")}</div>
+        ${this.hasGas && (this.eid("gas_cal_co") || this.eid("gas_cal_dhw")) ? html`<div class="grp">${this.t("Szacowanie gazu", "Gas estimate")}</div>
         ${this.numRow("gas_cal_co", "mdi:radiator", this.t("Zużycie gazu CO", "Gas use CH"), 2)}
-        ${this.numRow("gas_cal_dhw", "mdi:water-thermometer", this.t("Zużycie gazu CWU", "Gas use DHW"), 2)}
+        ${this.numRow("gas_cal_dhw", "mdi:water-thermometer", this.t("Zużycie gazu CWU", "Gas use DHW"), 2)}` : nothing}
         <div class="grp">${this.t("Instalacja i taryfa", "Installation and tariff")}</div>
         ${this.numRow("floor_max", "mdi:heating-coil", this.t("Limit zasilania podłogi (ostrzeżenie huba)", "Floor flow limit (hub warning)"), 0)}
         ${this.selRow(this.eid("floor_type"), this.t("Rodzaj posadzki", "Floor screed type"), "mdi:layers-triple-outline")}

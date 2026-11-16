@@ -2500,5 +2500,14 @@
   "During DHW (D09) the hub takes the DHW flow – the cylinder circuit usually has a different resistance. Empty = the value above for both.": "Durante AQS (D09) o hub usa o caudal AQS – o circuito do depósito tem normalmente outra resistência. Vazio = o valor acima para ambos.",
   "Assumed flow DHW (instead of D14)": "Caudal assumido AQS (em vez de D14)",
   "The DHW electric heater is on no bus. Enter the total power of the heaters fitted (0 = none) – with D09 on, the compressor stopped and the cylinder below the setpoint the hub shows “Electric heater: DHW” and adds this power to the DHW electricity and heat (COP 1).": "A resistência de AQS não está em nenhum bus. Introduza a potência total das resistências instaladas (0 = nenhuma) – com D09 ativo, compressor parado e depósito abaixo do setpoint, o hub mostra «Resistência: AQS» e soma esta potência à eletricidade e ao calor de AQS (COP 1).",
-  "Assumed DHW heater power": "Potência assumida resistência AQS"
+  "Assumed DHW heater power": "Potência assumida resistência AQS",
+  "Zone 1 time program (zones + DHW)": "Programa horário Zona 1 (zonas + AQS)",
+  "⚠ the boiler's calendar, and the hub also writes the setpoint (Comfort / Eco by schedule) – switch one off": "⚠ calendário da caldeira, e o hub também escreve o setpoint (Conforto / Eco por horário) – desligue um",
+  "by the boiler calendar": "pelo calendário da caldeira",
+  "hub schedule (Comfort / Eco)": "horário do hub (Conforto / Eco)",
+  "DHW time program (shared with the zones)": "Programa horário AQS (partilhado com as zonas)",
+  "off – the boiler's calendar switches the DHW setpoint (time programs Auto)": "desl. – o calendário da caldeira muda o setpoint AQS (programas horários Auto)",
+  "⚠ Time programs are on Auto, so the boiler switches Comfort / Eco itself – the hub writes the setpoint next to it. Keep one.": "⚠ Os programas horários estão em Auto, por isso a caldeira muda Conforto / Eco sozinha – o hub escreve o setpoint ao mesmo tempo. Mantenha um.",
+  "⚠ time programs on Auto – the boiler switches Comfort / Eco too; keep one": "⚠ programas horários em Auto – a caldeira também muda Conforto / Eco; mantenha um",
+  "prices, cylinder, screed, floor area, fault language": "preços, acumulador, betonilha, área, idioma de avarias"
 }

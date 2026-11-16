@@ -61,7 +61,10 @@ zasobnika ma zwykle inny przepływ); puste = pierwsza wartość dla obu. *Moc gr
 grzałek CWU, 0 = brak): grzałki nie ma na żadnej magistrali, więc przy D09, stojącej sprężarce (90 s po jej pracy
 w tym cyklu albo 5 min po D09 bez startu) i zasobniku poniżej nastawy hub pokazuje *Grzałka: CWU* i liczy tę moc jako
 prąd i ciepło CWU (COP 1); chip *Grzałka CWU* idzie za nią, gdy flaga grzałki Samsunga jest wyłączona. Okno nocne, które kocioł trzyma
-w emulowanym panelu strefy 1 (HERCULES PRO, 2701–2703), pokazuje kafelek Tryb nocny w karcie Tryb. Karta Krzywe
+w emulowanym panelu strefy 1 (HERCULES PRO, 2701–2703), pokazuje kafelek Tryb nocny w karcie Tryb, a jego przełącznik
+i godziny je ustawiają. Z selectem *Programy czasowe* panelu (2294) wiersz *Program czasowy CWU* karty Tryb idzie za
+tym selectem – kocioł prowadzi kalendarze stref i CWU tylko na Auto – i ostrzega, gdy *CWU Komfort-Eko wg harmonogramu*
+huba zapisuje nastawę obok niego. Karta Krzywe
 dopasowuje oś temperatury do krzywej.
 `bms: false` / `bms: true` pod `strategy:` wymusza jedno albo drugie.
 Dopóki zmierzony COP twojej jednostki nie jest wiarygodny, `diagram: { advice: false, cop: false }` pod `strategy:`

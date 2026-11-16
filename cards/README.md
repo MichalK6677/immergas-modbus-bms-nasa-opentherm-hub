@@ -62,7 +62,9 @@ the DHW electric heaters fitted, 0 = none): the heater is on no bus, so with D09
 it ran in the cycle, or not started 5 min after D09) and the cylinder below the setpoint the hub shows *Electric
 heater: DHW* and counts this power as DHW electricity and heat (COP 1); the *DHW heater* chip follows it while the
 Samsung booster flag is off. The night window the boiler keeps in the emulated zone 1 panel (HERCULES PRO, 2701–2703) shows in the Night
-mode tile of the Mode card. The Curve card fits its temperature axis to the curve.
+mode tile of the Mode card, and its toggle and hour chips set it. With the panel's *Time programs* select (2294) the
+Mode card's *DHW time program* row follows that select – the boiler runs its zone and DHW calendars only on Auto – and
+warns when the hub's *DHW Comfort-Eco by schedule* writes the setpoint next to it. The Curve card fits its temperature axis to the curve.
 `bms: false` / `bms: true` under `strategy:` forces it either way.
 While the measured COP of your unit is not trustworthy, `diagram: { advice: false, cop: false }` under `strategy:` keeps
 the Calibration hint and *COP today* out of the diagram's status box, and `calibration: false` leaves the Calibration

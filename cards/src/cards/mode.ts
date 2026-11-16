@@ -331,13 +331,27 @@ class ImmergasModeCard extends HubCard {
     const sub = bad ? this.t("brak odczytu", "no reading") : cur === "auto" ? this.t("wg harmonogramu", "by the schedule") + (ph ? this.t(" · teraz: ", " · now: ") + ph : "")
       : this.t("stała nastawa, bez harmonogramu", "fixed setpoint, no schedule");
     // OpenTherm has no zones - one CH program
-    return this.srcBlock("prog", this.ot ? this.t("Program czasowy CO", "CH time program") : this.t("Program czasowy CO Strefy 1", "Zone 1 CH time program"), sub,
+    return this.srcBlock("prog", this.ot ? this.t("Program czasowy CO", "CH time program") : this.progAuto !== null ? this.t("Program czasowy Strefy 1 (strefy + CWU)", "Zone 1 time program (zones + DHW)") : this.t("Program czasowy CO Strefy 1", "Zone 1 CH time program"), sub,
       [["auto", "mdi:calendar-clock", "blue", "AUTO"], ["manual", "mdi:hand-back-right-outline", "peach", "MANUAL"]], cur, set, bad);
   }
 
   /** DHW time program: AUTO = the hub switches the DHW setpoint between Comfort (inside the DHW calendar ranges) and
    *  Eco (outside them), MANUAL = one fixed DHW setpoint (DD switch "DHW Comfort-Eco by schedule") */
   private dhwProgRow() {
+    // 1.11.18: with the panel's time programs switch (2294) the row follows the appliance - it is the only DHW auto /
+    // manual the boiler has; the hub's own Comfort / Eco schedule (dhw_sched) is shown as an extra writer
+    if (this.progAuto !== null) {
+      const opts: string[] = this.attr("prog_mode", "options") ?? [], ctl = this.dhwCtl(), cur = this.progAuto ? "auto" : "manual";
+      const set = (m: string) => this.call("select", "select_option", "prog_mode", { option: opts[m === "auto" ? 1 : 0] });
+      const ph = this.bad("program") ? "" : this.s("program")!, hph = this.bad("dhw_phase") ? "" : this.txt("dhw_phase")!, ds = this.n("dhw_set");
+      const sub = ctl === "both" ? this.t("⚠ kalendarz pieca, a hub też zapisuje nastawę (Komfort / Eko wg harmonogramu) – wyłącz jedno",
+          "⚠ the boiler's calendar, and the hub also writes the setpoint (Comfort / Eco by schedule) – switch one off")
+        : ctl === "boiler" ? this.t("wg kalendarza pieca", "by the boiler calendar") + (ph ? this.t(" · teraz: ", " · now: ") + ph : "")
+        : ctl === "hub" ? this.t("harmonogram huba (Komfort / Eko)", "hub schedule (Comfort / Eco)") + (hph ? this.t(" · teraz: ", " · now: ") + hph : "")
+        : this.t("stała nastawa", "fixed setpoint") + (isNaN(ds) ? "" : ` ${this.f(ds, 0)} °C`);
+      return this.srcBlock("dprog", this.t("Program czasowy CWU (wspólny ze strefami)", "DHW time program (shared with the zones)"), sub,
+        [["auto", "mdi:calendar-clock", "blue", "AUTO"], ["manual", "mdi:hand-back-right-outline", "peach", "MANUAL"]], cur, set, false);
+    }
     if (!this.eid("dhw_sched")) return nothing;
     const bad = this.bad("dhw_sched"), cur = this.on("dhw_sched") ? "auto" : "manual";
     const set = (m: string) => this.call("switch", m === "auto" ? "turn_on" : "turn_off", "dhw_sched");
@@ -370,7 +384,8 @@ class ImmergasModeCard extends HubCard {
     const hm = (m: number | null) => (m === null ? null : String(Math.floor(m / 60)).padStart(2, "0") + ":" + String(m % 60).padStart(2, "0"));
     // 1.11.16: without the options, the night window the boiler keeps in the emulated zone 1 panel (2701-2703)
     const bt = (k: Key) => { const v = String(this.s(k) ?? ""); return /^\d\d?:\d\d/.test(v) ? +v.split(":")[0] * 60 + +v.split(":")[1].slice(0, 2) : null; };
-    const a0 = this.timeOpt("night_start") ?? bt("hub_m_night_from"), a1 = this.timeOpt("night_stop") ?? bt("hub_m_night_to"), ns = hm(a0), ne = hm(a1);
+    // 1.11.18: the window read from the boiler wins over the U12 / U13 copies (the default night_start / night_stop)
+    const a0 = bt("hub_m_night_from") ?? this.timeOpt("night_start"), a1 = bt("hub_m_night_to") ?? this.timeOpt("night_stop"), ns = hm(a0), ne = hm(a1);
     const now = new Date(), nm = now.getHours() * 60 + now.getMinutes();
     const inWin = a0 === null || a1 === null ? null : a0 <= a1 ? nm >= a0 && nm < a1 : nm >= a0 || nm < a1;
     const hint = this.dominus || nBad || inWin === null || inWin === nOn || this.s("hub_m_night_on") === "off" ? nothing : html`<div class="hint">${nOn
@@ -383,15 +398,18 @@ class ImmergasModeCard extends HubCard {
     // hub: "U11 set on the boiler" is the copy the cards use (the buses cannot switch U11): two taps, it changes nothing on the boiler
     const bNight = this.isSet("hub_m_night_on") ? this.on("hub_m_night_on") : null;   // read from the boiler (2701)
     const u11Set = bNight ?? (this.eid("u11_set") ? this.on("u11_set") : null), u11Conf = this.isArmed("tg_u11s");
+    // 1.11.18: with the boiler's window known, the toggle writes it (2701 in the emulated panel); otherwise the U11 copy
+    const nSet = bNight !== null && this.eid("hub_m_night_set_on") ? "hub_m_night_set_on" : bNight === null ? "u11_set" : null;
+    const bt0 = this.eid("hub_m_night_set_from") ?? this.eid("hub_m_night_from"), bt1 = this.eid("hub_m_night_set_to") ?? this.eid("hub_m_night_to");
     const night = this.dominus ? this.declaredNight(tchip, ns, ne, inWin) : html`<div class="night" style=${box(nc, nOn)} @click=${() => this.moreInfo("u11")}>
       <ha-icon icon=${nOn ? "mdi:weather-night" : "mdi:moon-waning-crescent"}
         style="color:${c(nOn ? "lavender" : "overlay2")};${nOn ? `filter:drop-shadow(0 0 5px ${c("lavender")})` : ""}"></ha-icon>
       <div class="cx"><div class="nt">${this.t("Tryb nocny", "Night mode")} <span style="font-size:9.5px;opacity:.5">U11</span></div>
         <div class="ns" style="color:${c(nc)}">${u11Conf ? this.t("dotknij ponownie, aby potwierdzić", "tap again to confirm") : u11Set === false && !nOn ? this.t("nieustawiona na piecu", "not set on the boiler") : nBad ? this.t("brak odczytu", "no reading") : nOn ? this.t("aktywny · cichsza praca", "active · quieter operation") : this.t("nieaktywny", "inactive")}${!isNaN(npct) && npct > 0 ? ` · ${Math.round(npct)} %` : ""}</div></div>
-      ${ns || ne ? html`<div class="tcs">${tchip(this.opt("night_start") ?? this.eid("hub_m_night_from"), "START · U12", ns)}<span style="opacity:.4">–</span>${tchip(this.opt("night_stop") ?? this.eid("hub_m_night_to"), "STOP · U13", ne)}</div>`
+      ${ns || ne ? html`<div class="tcs">${tchip(bt("hub_m_night_from") !== null ? bt0 : this.opt("night_start"), "START · U12", ns)}<span style="opacity:.4">–</span>${tchip(bt("hub_m_night_to") !== null ? bt1 : this.opt("night_stop"), "STOP · U13", ne)}</div>`
         : !isNaN(npct) ? html`<div class="np" style="color:${c(npct > 0 ? "lavender" : "overlay2")}">${npct > 0 ? Math.round(npct) + " %" : this.t("bez limitu", "no limit")}</div>` : nothing}
-      ${u11Set === null || bNight !== null ? nothing : html`<div class="tgl" style="flex:none;align-self:center;background:${u11Set ? ca("lavender", 0.35) : "rgba(var(--ih-ov-rgb), .08)"}${u11Conf ? `;outline:2px solid ${c("lavender")}` : ""}"
-        @click=${(e: Event) => { e.stopPropagation(); this.confirm("tg_u11s", () => this.call("switch", u11Set ? "turn_off" : "turn_on", "u11_set")); }}>
+      ${u11Set === null || nSet === null ? nothing : html`<div class="tgl" style="flex:none;align-self:center;background:${u11Set ? ca("lavender", 0.35) : "rgba(var(--ih-ov-rgb), .08)"}${u11Conf ? `;outline:2px solid ${c("lavender")}` : ""}"
+        @click=${(e: Event) => { e.stopPropagation(); this.confirm("tg_u11s", () => this.call("switch", u11Set ? "turn_off" : "turn_on", nSet as Key)); }}>
         <div class="kn" style="left:${u11Set ? 23 : 3}px;background:${u11Set ? c("lavender") : c("overlay1")}"></div></div>`}
     </div>${hint}`;
 

@@ -1701,7 +1701,7 @@ class ImmergasCalibrationCard extends HubCard {
     .set ha-icon { --mdc-icon-size: 13px; }
     @media (max-width: 520px) { .why { display: none; } }
     /* 1.11.17: a narrow card (phone) - parameter, model and now in a row, the recommendation on its own row below */
-    :host { container-type: inline-size; }
+    :host { display: block; container-type: inline-size; }
     @container (max-width: 560px) {
       .tbl { grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(0, 1fr)); }
       .tbl .cell.rec { grid-column: 1 / -1; margin-bottom: 4px; }
