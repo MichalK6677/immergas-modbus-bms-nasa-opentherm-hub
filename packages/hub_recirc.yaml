@@ -1,0 +1,202 @@
+# Immergas hub - package "hub_recirc": DHW recirculation on demand (MAGIS with the recirculation program in the boiler,
+# e.g. HERCULES PRO with the M4 pump).
+#
+# What the bus allows:
+#  - the boiler's recirculation program (weekday -> calendar 1-4) is internal: it is on no register, so the calendar it
+#    uses is declared here and must match the boiler menu (Clock and programs -> Recirculation program);
+#  - the calendar ranges (2310-2347) ARE served by the emulated zone 1 panel and the boiler re-reads them within
+#    seconds - a temporary range in that calendar starts the recirculation;
+#  - the M4 pump is on no bus: no feedback, the hub only triggers.
+#
+# A run puts one temporary range "now -> now + N min" (15-minute steps) into the declared calendar and takes it away
+# when it ends; pressing the button while it runs ends it at once. The run survives a restart (end time in flash).
+# Safety rules (calendar ranges are shared by the CH zones, the DHW and the recirculation):
+#  - refused when today the calendar also drives zone 1 or the DHW (zones 2 / 3 too while their panels are emulated):
+#    the range would switch Comfort on for them as well;
+#  - refused without the emulated zone 1 panel (with a physical panel the boiler reads the panel, not the hub);
+#  - nothing to do when a range of that calendar already covers "now";
+#  - the range keeps the ascending order the boiler requires (it rewrites a block whose ranges are out of order): it
+#    goes into its chronological slot, ends at the next range at the latest and never crosses midnight;
+#  - at the end the slot is restored only if it still holds the run's range - a change made meanwhile is kept.
+#
+# Part of jotuera/immergas-modbus-bms-nasa-opentherm-hub (PolyForm Noncommercial 1.0.0). Loaded by the main YAML through
+# `packages:`. Needs the dd_ packages (dd_schedules: the calendars and day selects, dd_core: dd_ha_time).
+
+globals:
+  - id: hub_rc_cal        # calendar of the running range 0-3, -1 = idle
+    type: int
+    restore_value: yes
+    initial_value: "-1"
+  - id: hub_rc_slot       # range 0-3 inside that calendar
+    type: int
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_rc_old        # the slot before the run: on * 1440 + off (minutes)
+    type: int
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_rc_new        # the run's range, same packing
+    type: int
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_rc_end_ts     # end of the run, epoch seconds
+    type: uint32_t
+    restore_value: yes
+    initial_value: "0"
+
+select:
+  - platform: template
+    id: hub_rc_calendar
+    name: "${n_hub_rc_calendar}"
+    icon: mdi:calendar-sync
+    entity_category: config
+    optimistic: true
+    restore_value: true
+    options:
+      - "${t_dd_cal1}"
+      - "${t_dd_cal2}"
+      - "${t_dd_cal3}"
+      - "${t_dd_cal4}"
+    initial_option: "${t_dd_cal4}"
+
+number:
+  - platform: template
+    id: hub_rc_minutes
+    name: "${n_hub_rc_minutes}"
+    icon: mdi:timer-sand
+    entity_category: config
+    unit_of_measurement: min
+    min_value: 15
+    max_value: 120
+    step: 15
+    mode: box
+    optimistic: true
+    restore_value: true
+    initial_value: 30
+
+binary_sensor:
+  - platform: template
+    id: hub_rc_active
+    name: "${n_hub_rc_active}"
+    icon: mdi:water-sync
+    lambda: return id(hub_rc_cal) >= 0;
+
+text_sensor:
+  - platform: template
+    id: hub_rc_state
+    name: "${n_hub_rc_state}"
+    icon: mdi:information-outline
+    update_interval: never
+
+button:
+  - platform: template
+    id: hub_rc_run
+    name: "${n_hub_rc_run}"
+    icon: mdi:water-sync
+    on_press:
+      - lambda: |-
+          if (id(hub_rc_cal) >= 0) { id(hub_rc_finish).execute(); return; }   // running: the same button ends it
+          auto now = id(dd_ha_time).now();
+          if (!now.is_valid()) { ESP_LOGW("hub_rc", "No time from Home Assistant yet"); return; }
+          if (!id(dd_emulate_29_diag)) { id(hub_rc_state).publish_state("${t_hub_rc_no_panel}"); return; }
+          int c = (int) id(hub_rc_calendar).active_index().value_or(3);
+          // calendars are shared: refuse when today this one also drives zone 1 / the DHW (zones 2 / 3 when emulated)
+          int wd = (now.day_of_week + 5) % 7;   // ESPTime 1 = Sunday -> 0 = Monday
+          select::Select *z1[7] = {id(dd_sel_weekday_1), id(dd_sel_weekday_2), id(dd_sel_weekday_3), id(dd_sel_weekday_4),
+                                   id(dd_sel_weekday_5), id(dd_sel_weekday_6), id(dd_sel_weekday_7)};
+          select::Select *dhw[7] = {id(dd_sel_dhw_weekday_1), id(dd_sel_dhw_weekday_2), id(dd_sel_dhw_weekday_3), id(dd_sel_dhw_weekday_4),
+                                    id(dd_sel_dhw_weekday_5), id(dd_sel_dhw_weekday_6), id(dd_sel_dhw_weekday_7)};
+          select::Select *z2[7] = {id(dd_sel_weekday_z2_1), id(dd_sel_weekday_z2_2), id(dd_sel_weekday_z2_3), id(dd_sel_weekday_z2_4),
+                                   id(dd_sel_weekday_z2_5), id(dd_sel_weekday_z2_6), id(dd_sel_weekday_z2_7)};
+          select::Select *z3[7] = {id(dd_sel_weekday_z3_1), id(dd_sel_weekday_z3_2), id(dd_sel_weekday_z3_3), id(dd_sel_weekday_z3_4),
+                                   id(dd_sel_weekday_z3_5), id(dd_sel_weekday_z3_6), id(dd_sel_weekday_z3_7)};
+          auto uses = [&](select::Select *s) { return (int) s->active_index().value_or(-1) == c; };
+          if (uses(z1[wd]) || uses(dhw[wd]) || (id(dd_emulate_2a_diag) && uses(z2[wd])) || (id(dd_emulate_2b_diag) && uses(z3[wd]))) {
+            id(hub_rc_state).publish_state("${t_hub_rc_in_use}");
+            ESP_LOGW("hub_rc", "Calendar %d also drives a zone or the DHW today - recirculation not started", c + 1);
+            return;
+          }
+          datetime::TimeEntity *cal[4][8] = {
+            {id(dd_dt_cal1_f1_on), id(dd_dt_cal1_f1_off), id(dd_dt_cal1_f2_on), id(dd_dt_cal1_f2_off), id(dd_dt_cal1_f3_on), id(dd_dt_cal1_f3_off), id(dd_dt_cal1_f4_on), id(dd_dt_cal1_f4_off)},
+            {id(dd_dt_cal2_f1_on), id(dd_dt_cal2_f1_off), id(dd_dt_cal2_f2_on), id(dd_dt_cal2_f2_off), id(dd_dt_cal2_f3_on), id(dd_dt_cal2_f3_off), id(dd_dt_cal2_f4_on), id(dd_dt_cal2_f4_off)},
+            {id(dd_dt_cal3_f1_on), id(dd_dt_cal3_f1_off), id(dd_dt_cal3_f2_on), id(dd_dt_cal3_f2_off), id(dd_dt_cal3_f3_on), id(dd_dt_cal3_f3_off), id(dd_dt_cal3_f4_on), id(dd_dt_cal3_f4_off)},
+            {id(dd_dt_cal4_f1_on), id(dd_dt_cal4_f1_off), id(dd_dt_cal4_f2_on), id(dd_dt_cal4_f2_off), id(dd_dt_cal4_f3_on), id(dd_dt_cal4_f3_off), id(dd_dt_cal4_f4_on), id(dd_dt_cal4_f4_off)}};
+          int on[4], off[4];
+          for (int f = 0; f < 4; f++) {
+            on[f] = cal[c][2 * f]->hour * 60 + cal[c][2 * f]->minute;
+            off[f] = cal[c][2 * f + 1]->hour * 60 + cal[c][2 * f + 1]->minute;
+          }
+          auto used = [&](int f) { return on[f] != off[f]; };
+          int m = now.hour * 60 + now.minute;
+          for (int f = 0; f < 4; f++) {
+            if (!used(f)) continue;
+            int b = off[f] == 0 ? 1440 : off[f];
+            if (on[f] < b ? (m >= on[f] && m < b) : (m >= on[f] || m < b)) { id(hub_rc_state).publish_state("${t_hub_rc_inside}"); return; }
+          }
+          int dur = std::max(15, ((int) id(hub_rc_minutes).state / 15) * 15);
+          int a = (m / 15) * 15;                               // starts now (floored to the quarter)
+          int e = std::min(1440, ((m + dur + 14) / 15) * 15);  // lasts at least the set time, never past midnight
+          // chronological slot: after the ranges that started before now
+          int k = 0;
+          for (int f = 0; f < 4; f++) if (used(f) && on[f] <= a) k++;
+          int s = (k < 4 && !used(k)) ? k : (k > 0 ? k - 1 : 0);   // a free slot there, else the range that already ended
+          for (int f = s + 1; f < 4; f++) if (used(f) && on[f] > a) { e = std::min(e, on[f]); break; }   // up to the next range
+          if (e - a < 15) { id(hub_rc_state).publish_state("${t_hub_rc_inside}"); return; }
+          id(hub_rc_cal) = c;
+          id(hub_rc_slot) = s;
+          id(hub_rc_old) = on[s] * 1440 + off[s];
+          id(hub_rc_new) = a * 1440 + (e % 1440);
+          id(hub_rc_end_ts) = (uint32_t) now.timestamp + (uint32_t) (e * 60 - (m * 60 + now.second));
+          cal[c][2 * s]->make_call().set_time(a / 60, a % 60, 0).perform();
+          cal[c][2 * s + 1]->make_call().set_time((e % 1440) / 60, e % 60, 0).perform();
+          char b[48];
+          snprintf(b, sizeof(b), "${t_hub_rc_until} %02d:%02d (%d/%d)", (e % 1440) / 60, e % 60, c + 1, s + 1);
+          id(hub_rc_state).publish_state(b);
+          ESP_LOGW("hub_rc", "Recirculation: calendar %d range %d %02d:%02d-%02d:%02d (was %02d:%02d-%02d:%02d)",
+                   c + 1, s + 1, a / 60, a % 60, (e % 1440) / 60, e % 60, on[s] / 60, on[s] % 60, off[s] / 60, off[s] % 60);
+
+script:
+  # end of a run (time up, or the button pressed again): the slot gets its range back - unless it was changed meanwhile
+  - id: hub_rc_finish
+    mode: queued
+    then:
+      - lambda: |-
+          int c = id(hub_rc_cal), s = id(hub_rc_slot);
+          if (c < 0 || c > 3 || s < 0 || s > 3) { id(hub_rc_cal) = -1; return; }
+          datetime::TimeEntity *cal[4][8] = {
+            {id(dd_dt_cal1_f1_on), id(dd_dt_cal1_f1_off), id(dd_dt_cal1_f2_on), id(dd_dt_cal1_f2_off), id(dd_dt_cal1_f3_on), id(dd_dt_cal1_f3_off), id(dd_dt_cal1_f4_on), id(dd_dt_cal1_f4_off)},
+            {id(dd_dt_cal2_f1_on), id(dd_dt_cal2_f1_off), id(dd_dt_cal2_f2_on), id(dd_dt_cal2_f2_off), id(dd_dt_cal2_f3_on), id(dd_dt_cal2_f3_off), id(dd_dt_cal2_f4_on), id(dd_dt_cal2_f4_off)},
+            {id(dd_dt_cal3_f1_on), id(dd_dt_cal3_f1_off), id(dd_dt_cal3_f2_on), id(dd_dt_cal3_f2_off), id(dd_dt_cal3_f3_on), id(dd_dt_cal3_f3_off), id(dd_dt_cal3_f4_on), id(dd_dt_cal3_f4_off)},
+            {id(dd_dt_cal4_f1_on), id(dd_dt_cal4_f1_off), id(dd_dt_cal4_f2_on), id(dd_dt_cal4_f2_off), id(dd_dt_cal4_f3_on), id(dd_dt_cal4_f3_off), id(dd_dt_cal4_f4_on), id(dd_dt_cal4_f4_off)}};
+          datetime::TimeEntity *t0 = cal[c][2 * s], *t1 = cal[c][2 * s + 1];
+          int cur = (t0->hour * 60 + t0->minute) * 1440 + t1->hour * 60 + t1->minute;
+          int o = id(hub_rc_old);
+          if (cur == id(hub_rc_new)) {
+            t0->make_call().set_time(o / 1440 / 60, (o / 1440) % 60, 0).perform();
+            t1->make_call().set_time((o % 1440) / 60, o % 60, 0).perform();
+            ESP_LOGW("hub_rc", "Recirculation ended: calendar %d range %d back to %02d:%02d-%02d:%02d", c + 1, s + 1,
+                     o / 1440 / 60, (o / 1440) % 60, (o % 1440) / 60, o % 60);
+          } else {
+            ESP_LOGW("hub_rc", "Recirculation ended: calendar %d range %d was changed meanwhile - left as it is", c + 1, s + 1);
+          }
+          id(hub_rc_cal) = -1;
+          id(hub_rc_end_ts) = 0;
+          id(hub_rc_state).publish_state("${t_hub_rc_idle}");
+
+interval:
+  - interval: 15s
+    then:
+      - lambda: |-
+          if (id(hub_rc_cal) < 0) {
+            if (!id(hub_rc_state).has_state()) id(hub_rc_state).publish_state("${t_hub_rc_idle}");
+            return;
+          }
+          auto now = id(dd_ha_time).now();
+          if (!now.is_valid()) return;
+          if ((uint32_t) now.timestamp >= id(hub_rc_end_ts)) { id(hub_rc_finish).execute(); return; }
+          if (!id(hub_rc_state).has_state() || id(hub_rc_state).state == "${t_hub_rc_idle}") {
+            int n = id(hub_rc_new) % 1440;
+            char b[48];
+            snprintf(b, sizeof(b), "${t_hub_rc_until} %02d:%02d (%d/%d)", n / 60, n % 60, id(hub_rc_cal) + 1, id(hub_rc_slot) + 1);
+            id(hub_rc_state).publish_state(b);
+          }

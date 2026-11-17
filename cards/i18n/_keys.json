@@ -13524,6 +13524,13 @@
   ]
  },
  {
+  "en": "Recirculation",
+  "pl": "Recyrkulacja",
+  "files": [
+   "schedule.ts"
+  ]
+ },
+ {
   "en": "calendar view",
   "pl": "widok kalendarzy",
   "files": [
@@ -13611,6 +13618,48 @@
  {
   "en": "Tap a day to move it to the calendar; the pencil opens the time ranges. Calendar ranges are shared by CH and DHW, the weekdays are separate.",
   "pl": "Dotknij dnia, aby przenieść go do kalendarza; ołówek otwiera zakresy godzin. Zakresy kalendarzy są wspólne dla CO i CWU, dni tygodnia — osobne.",
+  "files": [
+   "schedule.ts"
+  ]
+ },
+ {
+  "en": "Recirculation calendar in the boiler",
+  "pl": "Kalendarz recyrkulacji w piecu",
+  "files": [
+   "schedule.ts"
+  ]
+ },
+ {
+  "en": "⚠ Today this calendar also drives zone 1 or the DHW – a range would switch Comfort on for them, so the hub won't add it. Pick a calendar used only by the recirculation.",
+  "pl": "⚠ Dziś ten kalendarz prowadzi też strefę 1 albo CWU – zakres włączyłby im Komfort, więc hub go nie doda. Wybierz kalendarz używany tylko przez recyrkulację.",
+  "files": [
+   "schedule.ts"
+  ]
+ },
+ {
+  "en": "Time",
+  "pl": "Czas",
+  "files": [
+   "schedule.ts"
+  ]
+ },
+ {
+  "en": "Stop",
+  "pl": "Zakończ",
+  "files": [
+   "schedule.ts"
+  ]
+ },
+ {
+  "en": "Recirculation now",
+  "pl": "Recyrkulacja teraz",
+  "files": [
+   "schedule.ts"
+  ]
+ },
+ {
+  "en": "The recirculation program (day → calendar) lives only in the boiler: pick the same calendar as in the boiler menu. The hub adds a range from now for the set time (15-minute steps, until midnight at most) and removes it at the end, also after a restart. The pump is on no bus – there is no confirmation that it runs.",
+  "pl": "Program recyrkulacji (dzień → kalendarz) jest tylko w piecu: wybierz tu ten sam kalendarz co w menu pieca. Hub dodaje do niego zakres od teraz na ustawiony czas (krok 15 min, najdłużej do północy) i usuwa go na końcu, także po restarcie. Pompa nie jest na magistrali – nie ma potwierdzenia jej pracy.",
   "files": [
    "schedule.ts"
   ]

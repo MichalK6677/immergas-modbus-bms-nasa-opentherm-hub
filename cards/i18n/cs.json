@@ -2509,5 +2509,11 @@
   "off – the boiler's calendar switches the DHW setpoint (time programs Auto)": "vyp. – nastavení TUV přepíná kalendář kotle (časové programy Auto)",
   "⚠ Time programs are on Auto, so the boiler switches Comfort / Eco itself – the hub writes the setpoint next to it. Keep one.": "⚠ Časové programy jsou na Auto, takže kotel přepíná Komfort / Útlum sám – hub zapisuje nastavení vedle něj. Ponechte jedno.",
   "⚠ time programs on Auto – the boiler switches Comfort / Eco too; keep one": "⚠ časové programy na Auto – kotel také přepíná Komfort / Útlum; ponechte jedno",
-  "prices, cylinder, screed, floor area, fault language": "ceny, zásobník, potěr, plocha, jazyk poruch"
+  "prices, cylinder, screed, floor area, fault language": "ceny, zásobník, potěr, plocha, jazyk poruch",
+  "Recirculation": "Recirkulace",
+  "Recirculation calendar in the boiler": "Kalendář recirkulace v kotli",
+  "⚠ Today this calendar also drives zone 1 or the DHW – a range would switch Comfort on for them, so the hub won't add it. Pick a calendar used only by the recirculation.": "⚠ Dnes tento kalendář řídí i zónu 1 nebo TUV – rozsah by jim zapnul Komfort, proto ho hub nepřidá. Zvolte kalendář používaný jen recirkulací.",
+  "Stop": "Ukončit",
+  "Recirculation now": "Recirkulace nyní",
+  "The recirculation program (day → calendar) lives only in the boiler: pick the same calendar as in the boiler menu. The hub adds a range from now for the set time (15-minute steps, until midnight at most) and removes it at the end, also after a restart. The pump is on no bus – there is no confirmation that it runs.": "Program recirkulace (den → kalendář) je jen v kotli: zvolte stejný kalendář jako v menu kotle. Hub do něj přidá rozsah od teď na nastavenou dobu (krok 15 min, nejdéle do půlnoci) a na konci ho odebere, i po restartu. Čerpadlo není na sběrnici – jeho chod se nepotvrzuje."
 }

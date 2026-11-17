@@ -107,6 +107,12 @@ transceiverze z pinem kierunku) i pomiń `hw_atoms3_portabc.yaml`.
    elektrycznej CWU wpisz jej łączną moc w *Moc grzałki CWU (przyjęta)* – nie ma jej na żadnej magistrali, hub
    uwzględni ją wtedy w stanach i energii CWU.
    Szczegóły w [cards/README.pl.md](../cards/README.pl.md).
+   **Recyrkulacja CWU na żądanie** (program recyrkulacji w piecu, np. HERCULES PRO z pompą M4, i emulowany panel
+   strefy 1): dodaj `packages/hub_recirc.yaml`, przypisz programowi recyrkulacji w menu pieca kalendarz, którego nie
+   używa żadna strefa ani żaden dzień CWU, i wybierz ten sam kalendarz w *Recyrkulacja - kalendarz*. *Recyrkulacja teraz*
+   dodaje do niego zakres od teraz na *Recyrkulacja - czas* (krok 15 min, najdłużej do północy) i usuwa go na końcu, także
+   po restarcie; ponowne naciśnięcie kończy od razu. Hub odmawia, gdy dziś ten kalendarz prowadzi strefę 1 albo CWU,
+   i zostawia zakres zmieniony w międzyczasie. Pompy nie ma na magistrali, więc nie ma potwierdzenia jej pracy.
 5. Wgraj, dodaj urządzenie w Home Assistant, zainstaluj karty przez HACS ([cards/README.pl.md](../cards/README.pl.md)) i utwórz
    dashboard strategią `custom:immergas-hub` (zobacz [przegląd](../README.pl.md#dashboard)).
 

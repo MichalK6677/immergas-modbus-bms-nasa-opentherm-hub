@@ -107,6 +107,12 @@ direction pin) substitutions and leave out `hw_atoms3_portabc.yaml`.
    COP and heat cost from it (an approximation – the pump modulates between A03 and A04). Without T-/T+ the hub
    recognises DHW by D09 (DHW request) from D+/D-. With a DHW electric heater enter its total power in *Assumed DHW
    heater power* – it is on no bus, the hub then counts it in DHW states and energy. Details in [cards/README.md](../cards/README.md).
+   **DHW recirculation on demand** (recirculation program in the boiler, e.g. HERCULES PRO with the M4 pump, and the
+   emulated zone 1 panel): add `packages/hub_recirc.yaml`, give the recirculation program in the boiler menu a calendar
+   that no zone and no DHW day uses, and pick the same calendar in *Recirculation calendar*. *Recirculation now* puts a
+   range from now for *Recirculation time* into that calendar (15-minute steps, until midnight at most) and removes it at
+   the end, also after a restart; pressed again it stops at once. The hub refuses it when the calendar drives zone 1 or
+   the DHW today, and leaves a range you changed meanwhile as it is. The pump is on no bus, so there is no feedback.
 5. Flash, add the device in Home Assistant, install the cards with HACS ([cards/README.md](../cards/README.md)) and create the
    dashboard with the strategy `custom:immergas-hub` (see the [overview](../README.md#dashboard)).
 

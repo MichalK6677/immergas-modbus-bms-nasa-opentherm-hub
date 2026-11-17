@@ -647,6 +647,14 @@ globals:
   # 2705/2706 = start/end hour of the two night windows, 2704, 2708, 2295, 6106). With the panel emulated the boiler
   # writes them to the hub and reads them back, so the hub stores them (kept across restarts) instead of answering 0.
   # Order = EMU29_STORE_REGS in the engine; -32768 = never written (answer 0 as before).
+  # 1.11.19: fingerprint of the schedule served to the boiler (4 calendars + the day mappings), kept across restarts.
+  # When the schedule restored after a boot matches it, the restored values are the real schedule and are served at
+  # once - no learn window, so the boiler never reads an empty calendar (it dropped DHW Comfort to Eco for 2 min).
+  - id: dd_chrono_fp
+    type: uint32_t
+    restore_value: yes
+    initial_value: '0'
+
   - id: dd_emu29_store
     type: std::array<int16_t, 9>
     restore_value: yes
@@ -1132,7 +1140,42 @@ interval:
             }
           };
 
+          // 1.11.19: FNV-1a over every schedule register as served from the HA entities; never 0 (= nothing saved)
+          auto chrono_fp_now = [&]() -> uint32_t {
+            uint32_t h = 2166136261u;
+            for (uint16_t r = 2310; r <= 2496; r++) {
+              if (!chrono_is_schedule_reg(r)) continue;
+              uint16_t v = (uint16_t) chrono_ha_value(r);
+              h = (h ^ (v & 0xFF)) * 16777619u;
+              h = (h ^ (v >> 8)) * 16777619u;
+            }
+            return h ? h : 1u;
+          };
+          // 1.11.19: at the first schedule access after a boot, a restored schedule that matches the saved fingerprint
+          // ends the learn window at once (a new device / renamed entities = no match -> the window as before). Once
+          // the window is over, the fingerprint follows the schedule (checked every 30 s, saved only on a change).
+          auto chrono_tick = [&]() {
+            static bool checked = false;
+            static uint32_t last_ms = 0;
+            if (!checked) {
+              checked = true;
+              uint32_t fp = chrono_fp_now();
+              if (id(dd_chrono_fp) != 0 && fp == id(dd_chrono_fp)) {
+                chrono_learn_over = true;
+                ESP_LOGW("dd_chrono", "Restored schedule matches the saved fingerprint 0x%08X: served at once, no learn window", fp);
+              } else {
+                ESP_LOGW("dd_chrono", "Restored schedule does not match the saved fingerprint (0x%08X vs 0x%08X): learn window %u s",
+                         fp, id(dd_chrono_fp), CHRONO_LEARN_MS / 1000);
+              }
+            }
+            if (chrono_learning() || millis() - last_ms < 30000UL) return;
+            last_ms = millis();
+            uint32_t fp = chrono_fp_now();
+            if (fp != id(dd_chrono_fp)) id(dd_chrono_fp) = fp;
+          };
+
           auto chrono_reg_value = [&](uint16_t reg) -> int {
+            chrono_tick();
             if (chrono_is_schedule_reg(reg) && !chrono_learned[reg - 2310] && chrono_learning()) return -1;
             return chrono_ha_value(reg);
           };
@@ -2176,6 +2219,7 @@ interval:
 
             // v2.1.1: learn the real schedule after a boot (CHRONO_LEARN_MS). Sources: a boiler write, or a READ reply
             // from a physical device - never from an address we emulate (that could be our own echo).
+            if (chrono_is_schedule_reg(reg)) chrono_tick();
             if (addr != 0x1E && chrono_is_schedule_reg(reg) && !chrono_learned[reg - 2310] && chrono_learning()) {
               bool is_write = source[0] == 'W';
               bool emulated = (addr == 0x29 && emulator_29_enabled()) || (addr == 0x33 && emulator_33_enabled()) ||

@@ -1,7 +1,8 @@
 // "Harmonogram / Schedule": tabs CH (zone 1) / DHW and two layouts, switchable in the card:
 //  - "calendars" (like the Dominus app): four calendars, each with its time ranges and the weekdays it runs on;
 //  - "week": one row per day with its calendar 1-4, one calendar for all days, calendar editor below.
-// Ranges: ±15 min, saved 1.2 s after the last tap. Options: target: co | cwu (initial tab), layout: calendars | week.
+// Ranges: ±15 min, saved 1.2 s after the last tap. Options: target: co | cwu | rc (initial tab), layout: calendars | week.
+// 1.11.19: with the hub_recirc package a third tab "Recirculation" runs the DHW recirculation on demand.
 import { HubCard, html, css, nothing, c, ca, register } from "../base";
 import { Key } from "../names";
 
@@ -21,7 +22,8 @@ class ImmergasScheduleCard extends HubCard {
   private pend: Record<string, number> = {};
   private timers: Record<string, number> = {};
 
-  private get cwu() { return (this.tabT || this.config.target || "co") === "cwu"; }
+  private get cur() { const t = this.tabT || this.config.target || "co"; return t === "rc" && !this.eid("hub_rc_run") ? "co" : t; }
+  private get cwu() { return this.cur === "cwu"; }
   private sel(d: string) { return ((this.cwu ? "cwu_" : "co_") + d) as Key; }
   private tk(cal: number, z: number, x: "on" | "off") { return `k${cal}z${z}${x}` as Key; }
   private tmin(cal: number, z: number, x: "on" | "off") { const k = this.tk(cal, z, x); return k in this.pend ? this.pend[k] : mins(this.s(k)); }
@@ -132,7 +134,7 @@ class ImmergasScheduleCard extends HubCard {
     const active = activeCal > 0 && this.ranges(activeCal).some(([a, b]) => nowM >= a && nowM < b);
     const view = this.view || this.config.layout || "calendars", cwu = this.cwu;
     const tab = (id: string, icon: string, lbl: string, col: string) => {
-      const on = (id === "cwu") === cwu;
+      const on = id === this.cur;
       return html`<div class="tab" style=${on ? `background:${ca(col, 0.24)};border-color:${ca(col, 0.6)}` : ""}
         @click=${() => { this.tabT = id; this.open = 0; this.edit = 0; this.requestUpdate(); }}><ha-icon icon=${icon} style="color:${c(col)}"></ha-icon>${lbl}</div>`;
     };
@@ -152,10 +154,11 @@ class ImmergasScheduleCard extends HubCard {
         <div class="tabs">
           ${tab("co", "mdi:radiator", this.t("CO · Strefa 1", "CH · Zone 1"), "peach")}
           ${tab("cwu", "mdi:water-boiler", this.t("CWU", "DHW"), "sky")}
+          ${this.eid("hub_rc_run") ? tab("rc", "mdi:water-sync", this.t("Recyrkulacja", "Recirculation"), "teal") : nothing}
           <div class="vt" title=${view === "week" ? this.t("widok kalendarzy", "calendar view") : this.t("widok tygodnia", "week view")}
             @click=${() => { this.view = view === "week" ? "calendars" : "week"; this.requestUpdate(); }}>
             <ha-icon icon=${view === "week" ? "mdi:view-agenda-outline" : "mdi:calendar-week"}></ha-icon></div></div></div>
-      <div class="st" style="color:${c(active ? "green" : "overlay2")}">${stateTxt}</div>
+      ${this.cur === "rc" ? this.recirc(nowM) : html`<div class="st" style="color:${c(active ? "green" : "overlay2")}">${stateTxt}</div>
       ${this.dominus && !this.eid("k1z1on") ? html`<div class="note" style="color:${c("yellow")}">${this.t(
         "Godziny kalendarzy są ukryte: włącz urządzenie „Heating schedule” integracji Immergas Dominus (Ustawienia → Urządzenia).",
         "Calendar hours are hidden: enable the “Heating schedule” device of the Immergas Dominus integration (Settings → Devices).")}</div>` : nothing}
@@ -182,7 +185,39 @@ class ImmergasScheduleCard extends HubCard {
         ? this.t("Wybierz kalendarz dla każdego dnia; zakresy edytujesz w polu poniżej. Zakresy kalendarzy są wspólne dla CO i CWU, przypisanie dni — osobne.",
           "Pick a calendar for each day; edit the ranges below. Calendar ranges are shared by CH and DHW, the day assignment is separate.")
         : this.t("Dotknij dnia, aby przenieść go do kalendarza; ołówek otwiera zakresy godzin. Zakresy kalendarzy są wspólne dla CO i CWU, dni tygodnia — osobne.",
-          "Tap a day to move it to the calendar; the pencil opens the time ranges. Calendar ranges are shared by CH and DHW, the weekdays are separate.")}</div></div>`;
+          "Tap a day to move it to the calendar; the pencil opens the time ranges. Calendar ranges are shared by CH and DHW, the weekdays are separate.")}</div></div>`}`;
+  }
+
+  /** 1.11.19 Recirculation tab (package hub_recirc). The boiler's recirculation program (day -> calendar) is on no
+   *  register, so the calendar is declared here; the hub puts a temporary range into it and takes it away at the end.
+   *  The pump is on no bus: the state below is the hub's run, not a pump feedback. */
+  private recirc(nowM: number) {
+    const opts: string[] = this.attr("hub_rc_calendar", "options") ?? [], cal = opts.indexOf(this.s("hub_rc_calendar") ?? "") + 1;
+    const run = this.on("hub_rc_active"), st = this.bad("hub_rc_state") ? "" : this.s("hub_rc_state") ?? "";
+    // calendars are shared: today's zone 1 / DHW calendar must not be the recirculation one (the hub refuses it too)
+    const day = DAYS[(new Date().getDay() + 6) % 7];
+    const calOf = (k: string) => { const o: string[] = this.attr(k as Key, "options") ?? [], s = this.s(k as Key); return s ? o.indexOf(s) + 1 : 0; };
+    const clash = cal > 0 && (calOf("co_" + day) === cal || calOf("cwu_" + day) === cal);
+    const mins = this.n("hub_rc_minutes"), a = this.so("hub_rc_minutes")?.attributes ?? {}, step = a.step ?? 15;
+    const setM = (d: number) => !isNaN(mins) && this.call("number", "set_value", "hub_rc_minutes", { value: Math.max(a.min ?? 15, Math.min(a.max ?? 120, mins + d * step)) });
+    const rs = cal ? this.ranges(cal) : [];
+    return html`<div class="st" style="color:${c(run ? "teal" : "overlay2")}">${st}</div>
+      <div class="allr" style="margin-top:0"><span class="al">${this.t("Kalendarz recyrkulacji w piecu", "Recirculation calendar in the boiler")}</span>
+        <div class="picks">${[1, 2, 3, 4].map((n) => this.pk(n, n === cal, () => n !== cal && opts[n - 1] && this.call("select", "select_option", "hub_rc_calendar", { option: opts[n - 1] })))}</div></div>
+      ${cal ? html`<div class="ed" style="background:${ca(KC[cal], 0.06)};border:1px solid ${ca(KC[cal], 0.22)}">
+        <div class="eh"><span>${this.t("Kalendarz", "Calendar")} ${cal}</span><span style="opacity:.6">${rs.length ? rs.map(([x, y]) => `${hm(x)}–${hm(y)}`).join(", ") : this.t("brak zakresów", "no ranges")}</span></div>
+        ${this.bar(cal, 14, nowM)}${this.axis()}${this.rangeEditor(cal)}</div>` : nothing}
+      ${clash ? html`<div class="note" style="color:${c("yellow")}">${this.t("⚠ Dziś ten kalendarz prowadzi też strefę 1 albo CWU – zakres włączyłby im Komfort, więc hub go nie doda. Wybierz kalendarz używany tylko przez recyrkulację.",
+        "⚠ Today this calendar also drives zone 1 or the DHW – a range would switch Comfort on for them, so the hub won't add it. Pick a calendar used only by the recirculation.")}</div>` : nothing}
+      <div class="row">
+        <div class="price" style="background:${ca("teal", 0.07)};border:1px solid ${ca("teal", 0.22)}">
+          <div class="btn" @click=${() => setM(-1)}><ha-icon icon="mdi:minus"></ha-icon></div>
+          <div class="pc" @click=${() => this.moreInfo("hub_rc_minutes")}><div class="lbl"><ha-icon icon="mdi:timer-sand" style="--mdc-icon-size:13px"></ha-icon> ${this.t("Czas", "Time")}</div><div class="pv">${this.f(mins, 0)} min</div></div>
+          <div class="btn" @click=${() => setM(1)}><ha-icon icon="mdi:plus"></ha-icon></div></div>
+        <div class="rcb" style="background:${ca(run ? "red" : "teal", run ? 0.14 : 0.24)};border:1px solid ${ca(run ? "red" : "teal", 0.7)};color:${c(run ? "red" : "teal")}"
+          @click=${() => this.call("button", "press", "hub_rc_run")}><ha-icon icon=${run ? "mdi:stop" : "mdi:water-sync"}></ha-icon>${run ? this.t("Zakończ", "Stop") : this.t("Recyrkulacja teraz", "Recirculation now")}</div></div>
+      <div class="note">${this.t("Program recyrkulacji (dzień → kalendarz) jest tylko w piecu: wybierz tu ten sam kalendarz co w menu pieca. Hub dodaje do niego zakres od teraz na ustawiony czas (krok 15 min, najdłużej do północy) i usuwa go na końcu, także po restarcie. Pompa nie jest na magistrali – nie ma potwierdzenia jej pracy.",
+        "The recirculation program (day → calendar) lives only in the boiler: pick the same calendar as in the boiler menu. The hub adds a range from now for the set time (15-minute steps, until midnight at most) and removes it at the end, also after a restart. The pump is on no bus – there is no confirmation that it runs.")}</div>`;
   }
 
   static styles = [HubCard.styles, css`
@@ -198,6 +233,9 @@ class ImmergasScheduleCard extends HubCard {
       border: 1px solid rgba(var(--ih-ov-rgb), .08); background: rgba(var(--ih-ov-rgb), .04); }
     .vt ha-icon { --mdc-icon-size: 17px; opacity: .8; }
     .st { font-size: 10.5px; font-weight: 800; margin: 6px 0 8px; }
+    .rcb { flex: 1 1 150px; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 12px;
+      border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .rcb ha-icon { --mdc-icon-size: 17px; }
     .cals { display: grid; gap: 8px; }
     .cal { padding: 8px 10px; border-radius: 13px; }
     .ch { cursor: pointer; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }

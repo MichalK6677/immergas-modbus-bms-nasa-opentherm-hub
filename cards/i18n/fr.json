@@ -2509,5 +2509,11 @@
   "off – the boiler's calendar switches the DHW setpoint (time programs Auto)": "arrêt – le calendrier de la chaudière change la consigne ECS (programmes horaires Auto)",
   "⚠ Time programs are on Auto, so the boiler switches Comfort / Eco itself – the hub writes the setpoint next to it. Keep one.": "⚠ Les programmes horaires sont sur Auto, la chaudière bascule donc Confort / Éco elle-même – le hub écrit la consigne en parallèle. Gardez-en un.",
   "⚠ time programs on Auto – the boiler switches Comfort / Eco too; keep one": "⚠ programmes horaires sur Auto – la chaudière bascule aussi Confort / Éco ; gardez-en un",
-  "prices, cylinder, screed, floor area, fault language": "prix, ballon, chape, surface, langue des défauts"
+  "prices, cylinder, screed, floor area, fault language": "prix, ballon, chape, surface, langue des défauts",
+  "Recirculation": "Recirculation",
+  "Recirculation calendar in the boiler": "Calendrier de recirculation dans la chaudière",
+  "⚠ Today this calendar also drives zone 1 or the DHW – a range would switch Comfort on for them, so the hub won't add it. Pick a calendar used only by the recirculation.": "⚠ Aujourd'hui ce calendrier pilote aussi la zone 1 ou l'ECS – une plage y activerait le Confort, le hub ne l'ajoutera donc pas. Choisissez un calendrier utilisé uniquement par la recirculation.",
+  "Stop": "Arrêter",
+  "Recirculation now": "Recirculation maintenant",
+  "The recirculation program (day → calendar) lives only in the boiler: pick the same calendar as in the boiler menu. The hub adds a range from now for the set time (15-minute steps, until midnight at most) and removes it at the end, also after a restart. The pump is on no bus – there is no confirmation that it runs.": "Le programme de recirculation (jour → calendrier) n'existe que dans la chaudière : choisissez le même calendrier que dans le menu de la chaudière. Le hub ajoute une plage à partir de maintenant pour la durée réglée (pas de 15 min, jusqu'à minuit au plus) et la retire à la fin, même après un redémarrage. La pompe n'est sur aucun bus – son fonctionnement n'est pas confirmé."
 }

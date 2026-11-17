@@ -2509,5 +2509,11 @@
   "off – the boiler's calendar switches the DHW setpoint (time programs Auto)": "desl. – o calendário da caldeira muda o setpoint AQS (programas horários Auto)",
   "⚠ Time programs are on Auto, so the boiler switches Comfort / Eco itself – the hub writes the setpoint next to it. Keep one.": "⚠ Os programas horários estão em Auto, por isso a caldeira muda Conforto / Eco sozinha – o hub escreve o setpoint ao mesmo tempo. Mantenha um.",
   "⚠ time programs on Auto – the boiler switches Comfort / Eco too; keep one": "⚠ programas horários em Auto – a caldeira também muda Conforto / Eco; mantenha um",
-  "prices, cylinder, screed, floor area, fault language": "preços, acumulador, betonilha, área, idioma de avarias"
+  "prices, cylinder, screed, floor area, fault language": "preços, acumulador, betonilha, área, idioma de avarias",
+  "Recirculation": "Recirculação",
+  "Recirculation calendar in the boiler": "Calendário de recirculação na caldeira",
+  "⚠ Today this calendar also drives zone 1 or the DHW – a range would switch Comfort on for them, so the hub won't add it. Pick a calendar used only by the recirculation.": "⚠ Hoje este calendário também comanda a zona 1 ou as AQS – um intervalo ligaria o Conforto para elas, por isso o hub não o adiciona. Escolha um calendário usado só pela recirculação.",
+  "Stop": "Parar",
+  "Recirculation now": "Recirculação agora",
+  "The recirculation program (day → calendar) lives only in the boiler: pick the same calendar as in the boiler menu. The hub adds a range from now for the set time (15-minute steps, until midnight at most) and removes it at the end, also after a restart. The pump is on no bus – there is no confirmation that it runs.": "O programa de recirculação (dia → calendário) existe só na caldeira: escolha o mesmo calendário que no menu da caldeira. O hub adiciona um intervalo a partir de agora pelo tempo definido (passos de 15 min, no máximo até à meia-noite) e remove-o no fim, também após um reinício. A bomba não está em nenhum barramento – não há confirmação de que funciona."
 }
