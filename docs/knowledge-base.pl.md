@@ -350,7 +350,7 @@ rejestr wejściowy (func 04).
 | 2005 / 2006 | D41 | temperatura / wilgotność pokojowa (jedyne wartości z panelu do regulacji) | R |
 | 2010 | — | faza strefy: bit2 ręczny, bit3 żądanie grzania, bit6 komfort, bit7 eko; 1 = odpowietrzanie U50 | W |
 | 2015 / 2016 / 2017 | U03 | nastawa / maks. / offset strefy 1 | RW |
-| 2090 | — | stan programu czasowego: 4 ręczny, 64 auto-komfort, 128 auto-eko (bit 1 maskowany: 66 = komfort) | W |
+| 2090 | — | stan programu czasowego: 4 ręczny, 64 auto-komfort, 128 auto-eko (bit 1 maskowany: 66 = komfort); bit 3 = trwa cykl anty-legionelli (74) | W |
 | 2095 | D05 | nastawa CWU | RW |
 | 2100 / 2101 | — | kod błędu (0 brak, np. 121, 142, 193) / reset | W |
 | 2210–2216 | U07 | Comfort/Eco grzania i chłodzenia, wilgotność | RW |
@@ -364,7 +364,7 @@ rejestr wejściowy (func 04).
 | 3003 | D04 | **wyliczona nastawa zasilania** (krzywa + U03; 0 bez żądania) | W |
 | 3011 / 3012 | D20 / D08 | generator główny (pompa): zasilanie / powrót | W |
 | 3013 / 3014 | D01 / — | generator dodatkowy (kocioł gazowy): zasilanie / powrót | W |
-| 3015 | D05 | **aktywna** nastawa CWU (np. 60 °C w anty-legionelli) | W |
+| 3015 | D05 | **aktywna** nastawa CWU (np. 60 °C w anty-legionelli w MAGIS PRO; w HERCULES PRO bez zmian) | W |
 | 3016 | D03 | temperatura zasobnika CWU | W |
 | 3031 / 3042 | D91 | firmware kotła (600 = 6.00) / panelu (201 = 2.01) | W / R |
 | 4199 (0x33) | A13 | liczba stref | W |
@@ -412,8 +412,10 @@ U03 = −2 daje 23,5 → przycięte do **24,0** (R05). **U03 przesuwa krzywą 1:
 
 - Parametry integracji I01–I10, A05, A12, A18, P07–P24, T02–T23, U11 i menu serwisowe M **nie zmieniają rejestrów
   D+/D-**. Wyjątki: E193 w menu M (2001 bit2 + 2100 = 193) i 3002 po zmianie P07.
-- **Anty-legionella P15** (P13 czas, P16 godzina, P17 dzień) nie jest transmitowana. Widać tylko skutek: aktywna
-  nastawa CWU 3015 rośnie na czas cyklu. Emulator nie może jej przejmować jako nastawy użytkownika, bo zablokowałby
+- **Anty-legionella P15** (P13 czas, P16 godzina, P17 dzień) nie jest transmitowana. Widać tylko skutek: **bit 3
+  rejestru 2090** jest ustawiony przez cały cykl (*Cykl anty-legionella (piec)*), a w MAGIS PRO na czas cyklu rośnie
+  aktywna nastawa CWU 3015. HERCULES PRO trzyma 3015 / 2095 na nastawie CWU i grzeje zasobnik do 65 °C: sprężarka staje
+  przy ~55 °C, resztę robi grzałka, którą hub przy ustawionym bicie liczy jako energię grzałki. Emulator nie może jej przejmować jako nastawy użytkownika, bo zablokowałby
   CWU na 60 °C.
 - Ustawienia lokalne panelu (temperatura przeciwzamrożeniowa, cykl antybakteryjny panelu, wyłączenie osuszania,
   minimalna nastawa chłodzenia, program urlopowy) nie trafiają na magistralę.

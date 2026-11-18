@@ -60,6 +60,7 @@ substitutions:
   t_hub_idle: "Parado"
   t_hub_no_data: "Sem dados"
   t_hub_heater: "Resistência"
+  t_hub_legionella: "antilegionela"
   t_hub_hp_heater: "BC + resistência"
   t_hub_ff_cooling_match: "Arrefecimento"
   # boiler menu settings that no bus carries (hub_boiler_params)

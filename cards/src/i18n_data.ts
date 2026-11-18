@@ -2400,6 +2400,7 @@ export const TR: Record<string, Record<string, string>> = {
 "≤ 60 °C (condensing)": "≤ 60 °C (kondenzace)",
 "● D04 setpoint (boiler) · ○ actual flow": "● žádaná D04 (kotel) · ○ skutečný výstup",
 "● D04 setpoint (cooling mode only) · ○ actual flow": "● žádaná D04 (jen v režimu chlazení) · ○ skutečný výstup",
+"● anti-legionella running": "● probíhá antilegionela",
 "● flow computed from the curve": "● výstup vypočtený z křivky",
 "● flow computed from the curve (Dominus does not read the flow)": "● výstup vypočtený z křivky (Dominus výstup nečte)",
 "● from the curve · ○ actual flow": "● z křivky · ○ skutečný výstup",
@@ -2420,7 +2421,8 @@ export const TR: Record<string, Record<string, string>> = {
 "✓ no correction": "✓ bez korekce",
 "❄ DEFROST": "❄ ODMRAZOVÁNÍ",
 "🔒 Older hub: arm the write in the F1/F2 control card to change the setpoints.": "🔒 Starší hub: pro změnu nastavení aktivujte zápis v kartě Ovládání F1/F2.",
-"🔥 gas boiler": "🔥 plynový kotel"
+"🔥 gas boiler": "🔥 plynový kotel",
+"🦠 anti-legionella": "🦠 antilegionela"
 },
 "de": {
 " (first judge the curve change after a day)": " (Kurvenänderung zuerst nach einem Tag beurteilen)",
@@ -4822,6 +4824,7 @@ export const TR: Record<string, Record<string, string>> = {
 "≤ 60 °C (condensing)": "≤ 60 °C (Brennwert)",
 "● D04 setpoint (boiler) · ○ actual flow": "● Sollwert D04 (Kessel) · ○ Ist-Vorlauf",
 "● D04 setpoint (cooling mode only) · ○ actual flow": "● Sollwert D04 (nur im Kühlbetrieb) · ○ Ist-Vorlauf",
+"● anti-legionella running": "● Legionellenschutz läuft",
 "● flow computed from the curve": "● Vorlauf aus der Kurve berechnet",
 "● flow computed from the curve (Dominus does not read the flow)": "● Vorlauf aus der Kurve berechnet (Dominus liest den Vorlauf nicht)",
 "● from the curve · ○ actual flow": "● aus der Kurve · ○ tatsächlicher Vorlauf",
@@ -4842,7 +4845,8 @@ export const TR: Record<string, Record<string, string>> = {
 "✓ no correction": "✓ keine Korrektur",
 "❄ DEFROST": "❄ ABTAUEN",
 "🔒 Older hub: arm the write in the F1/F2 control card to change the setpoints.": "🔒 Älterer Hub: Schreiben in der Karte F1/F2-Steuerung aktivieren, um die Sollwerte zu ändern.",
-"🔥 gas boiler": "🔥 Gaskessel"
+"🔥 gas boiler": "🔥 Gaskessel",
+"🦠 anti-legionella": "🦠 Legionellenschutz"
 },
 "es": {
 " (first judge the curve change after a day)": " (primero evalúa el cambio de curva tras un día)",
@@ -7244,6 +7248,7 @@ export const TR: Record<string, Record<string, string>> = {
 "≤ 60 °C (condensing)": "≤ 60 °C (condensación)",
 "● D04 setpoint (boiler) · ○ actual flow": "● consigna D04 (caldera) · ○ impulsión real",
 "● D04 setpoint (cooling mode only) · ○ actual flow": "● consigna D04 (solo en modo refrigeración) · ○ impulsión real",
+"● anti-legionella running": "● antilegionela en curso",
 "● flow computed from the curve": "● impulsión calculada con la curva",
 "● flow computed from the curve (Dominus does not read the flow)": "● impulsión calculada con la curva (Dominus no lee la impulsión)",
 "● from the curve · ○ actual flow": "● de la curva · ○ impulsión real",
@@ -7264,7 +7269,8 @@ export const TR: Record<string, Record<string, string>> = {
 "✓ no correction": "✓ sin corrección",
 "❄ DEFROST": "❄ DESESCARCHE",
 "🔒 Older hub: arm the write in the F1/F2 control card to change the setpoints.": "🔒 Hub antiguo: arma la escritura en la tarjeta de control F1/F2 para cambiar las consignas.",
-"🔥 gas boiler": "🔥 caldera de gas"
+"🔥 gas boiler": "🔥 caldera de gas",
+"🦠 anti-legionella": "🦠 antilegionela"
 },
 "fr": {
 " (first judge the curve change after a day)": " (juger d'abord le changement de courbe après un jour)",
@@ -9666,6 +9672,7 @@ export const TR: Record<string, Record<string, string>> = {
 "≤ 60 °C (condensing)": "≤ 60 °C (condensation)",
 "● D04 setpoint (boiler) · ○ actual flow": "● consigne D04 (chaudière) · ○ départ réel",
 "● D04 setpoint (cooling mode only) · ○ actual flow": "● consigne D04 (mode refroidissement seulement) · ○ départ réel",
+"● anti-legionella running": "● anti-légionelle en cours",
 "● flow computed from the curve": "● départ calculé depuis la courbe",
 "● flow computed from the curve (Dominus does not read the flow)": "● départ calculé depuis la courbe (Dominus ne lit pas le départ)",
 "● from the curve · ○ actual flow": "● d'après la courbe · ○ départ réel",
@@ -9686,7 +9693,8 @@ export const TR: Record<string, Record<string, string>> = {
 "✓ no correction": "✓ pas de correction",
 "❄ DEFROST": "❄ DÉGIVRAGE",
 "🔒 Older hub: arm the write in the F1/F2 control card to change the setpoints.": "🔒 Ancien hub : armez l'écriture dans la carte Commande F1/F2 pour modifier les consignes.",
-"🔥 gas boiler": "🔥 chaudière gaz"
+"🔥 gas boiler": "🔥 chaudière gaz",
+"🦠 anti-legionella": "🦠 anti-légionelle"
 },
 "hu": {
 " (first judge the curve change after a day)": " (előbb a görbeváltozást értékelje egy nap után)",
@@ -12088,6 +12096,7 @@ export const TR: Record<string, Record<string, string>> = {
 "≤ 60 °C (condensing)": "≤ 60 °C (kondenzáció)",
 "● D04 setpoint (boiler) · ○ actual flow": "● D04 célérték (kazán) · ○ tényleges előremenő",
 "● D04 setpoint (cooling mode only) · ○ actual flow": "● D04 célérték (csak hűtés módban) · ○ tényleges előremenő",
+"● anti-legionella running": "● legionella elleni ciklus fut",
 "● flow computed from the curve": "● előremenő a görbéből számolva",
 "● flow computed from the curve (Dominus does not read the flow)": "● előremenő a görbéből számolva (a Dominus nem olvassa az előremenőt)",
 "● from the curve · ○ actual flow": "● a görbéből · ○ tényleges előremenő",
@@ -12108,7 +12117,8 @@ export const TR: Record<string, Record<string, string>> = {
 "✓ no correction": "✓ nincs korrekció",
 "❄ DEFROST": "❄ LEOLVASZTÁS",
 "🔒 Older hub: arm the write in the F1/F2 control card to change the setpoints.": "🔒 Régebbi hub: a célértékek módosításához élesítse az írást az F1/F2 vezérlés kártyán.",
-"🔥 gas boiler": "🔥 gázkazán"
+"🔥 gas boiler": "🔥 gázkazán",
+"🦠 anti-legionella": "🦠 legionella elleni"
 },
 "it": {
 " (first judge the curve change after a day)": " (prima valuta la modifica della curva dopo un giorno)",
@@ -14510,6 +14520,7 @@ export const TR: Record<string, Record<string, string>> = {
 "≤ 60 °C (condensing)": "≤ 60 °C (condensazione)",
 "● D04 setpoint (boiler) · ○ actual flow": "● setpoint D04 (caldaia) · ○ mandata effettiva",
 "● D04 setpoint (cooling mode only) · ○ actual flow": "● setpoint D04 (solo in modalità raffrescamento) · ○ mandata effettiva",
+"● anti-legionella running": "● antilegionella in corso",
 "● flow computed from the curve": "● mandata calcolata dalla curva",
 "● flow computed from the curve (Dominus does not read the flow)": "● mandata calcolata dalla curva (Dominus non legge la mandata)",
 "● from the curve · ○ actual flow": "● dalla curva · ○ mandata reale",
@@ -14530,7 +14541,8 @@ export const TR: Record<string, Record<string, string>> = {
 "✓ no correction": "✓ nessuna correzione",
 "❄ DEFROST": "❄ SBRINAMENTO",
 "🔒 Older hub: arm the write in the F1/F2 control card to change the setpoints.": "🔒 Hub precedente: arma la scrittura nella scheda di controllo F1/F2 per modificare i setpoint.",
-"🔥 gas boiler": "🔥 caldaia a gas"
+"🔥 gas boiler": "🔥 caldaia a gas",
+"🦠 anti-legionella": "🦠 antilegionella"
 },
 "nl": {
 " (first judge the curve change after a day)": " (beoordeel de curvewijziging eerst na een dag)",
@@ -16932,6 +16944,7 @@ export const TR: Record<string, Record<string, string>> = {
 "≤ 60 °C (condensing)": "≤ 60 °C (condenserend)",
 "● D04 setpoint (boiler) · ○ actual flow": "● instelling D04 (ketel) · ○ werkelijke aanvoer",
 "● D04 setpoint (cooling mode only) · ○ actual flow": "● instelling D04 (alleen in koelmodus) · ○ werkelijke aanvoer",
+"● anti-legionella running": "● legionellapreventie actief",
 "● flow computed from the curve": "● aanvoer berekend uit de curve",
 "● flow computed from the curve (Dominus does not read the flow)": "● aanvoer berekend uit de curve (Dominus leest de aanvoer niet)",
 "● from the curve · ○ actual flow": "● uit de curve · ○ werkelijke aanvoer",
@@ -16952,7 +16965,8 @@ export const TR: Record<string, Record<string, string>> = {
 "✓ no correction": "✓ geen correctie",
 "❄ DEFROST": "❄ ONTDOOIEN",
 "🔒 Older hub: arm the write in the F1/F2 control card to change the setpoints.": "🔒 Oudere hub: activeer schrijven in de kaart F1/F2-bediening om de instellingen te wijzigen.",
-"🔥 gas boiler": "🔥 gasketel"
+"🔥 gas boiler": "🔥 gasketel",
+"🦠 anti-legionella": "🦠 legionellapreventie"
 },
 "pt": {
 " (first judge the curve change after a day)": " (primeiro avalie a alteração da curva após um dia)",
@@ -19354,6 +19368,7 @@ export const TR: Record<string, Record<string, string>> = {
 "≤ 60 °C (condensing)": "≤ 60 °C (condensação)",
 "● D04 setpoint (boiler) · ○ actual flow": "● setpoint D04 (caldeira) · ○ ida real",
 "● D04 setpoint (cooling mode only) · ○ actual flow": "● setpoint D04 (só no modo arrefecimento) · ○ ida real",
+"● anti-legionella running": "● antilegionela em curso",
 "● flow computed from the curve": "● ida calculada pela curva",
 "● flow computed from the curve (Dominus does not read the flow)": "● ida calculada pela curva (o Dominus não lê a ida)",
 "● from the curve · ○ actual flow": "● pela curva · ○ ida real",
@@ -19374,7 +19389,8 @@ export const TR: Record<string, Record<string, string>> = {
 "✓ no correction": "✓ sem correção",
 "❄ DEFROST": "❄ DESCONGELAÇÃO",
 "🔒 Older hub: arm the write in the F1/F2 control card to change the setpoints.": "🔒 Hub antigo: arme a escrita no cartão de controlo F1/F2 para alterar os setpoints.",
-"🔥 gas boiler": "🔥 caldeira a gás"
+"🔥 gas boiler": "🔥 caldeira a gás",
+"🦠 anti-legionella": "🦠 antilegionela"
 },
 "sk": {
 " (first judge the curve change after a day)": " (zmenu krivky najprv posúďte po dni)",
@@ -21776,6 +21792,7 @@ export const TR: Record<string, Record<string, string>> = {
 "≤ 60 °C (condensing)": "≤ 60 °C (kondenzácia)",
 "● D04 setpoint (boiler) · ○ actual flow": "● žiadaná D04 (kotol) · ○ skutočný výstup",
 "● D04 setpoint (cooling mode only) · ○ actual flow": "● žiadaná D04 (len v režime chladenia) · ○ skutočný výstup",
+"● anti-legionella running": "● prebieha antilegionela",
 "● flow computed from the curve": "● výstup vypočítaný z krivky",
 "● flow computed from the curve (Dominus does not read the flow)": "● výstup vypočítaný z krivky (Dominus výstup nečíta)",
 "● from the curve · ○ actual flow": "● z krivky · ○ skutočný výstup",
@@ -21796,6 +21813,7 @@ export const TR: Record<string, Record<string, string>> = {
 "✓ no correction": "✓ bez korekcie",
 "❄ DEFROST": "❄ ODMRAZOVANIE",
 "🔒 Older hub: arm the write in the F1/F2 control card to change the setpoints.": "🔒 Starší hub: na zmenu nastavení aktivujte zápis v karte Ovládanie F1/F2.",
-"🔥 gas boiler": "🔥 plynový kotol"
+"🔥 gas boiler": "🔥 plynový kotol",
+"🦠 anti-legionella": "🦠 antilegionela"
 }
 };

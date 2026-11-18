@@ -60,6 +60,7 @@ substitutions:
   t_hub_idle: "Klid"
   t_hub_no_data: "Žádná data"
   t_hub_heater: "Topná tyč"
+  t_hub_legionella: "antilegionela"
   t_hub_hp_heater: "TČ + topná tyč"
   t_hub_ff_cooling_match: "Chlazení"
   # boiler menu settings that no bus carries (hub_boiler_params)

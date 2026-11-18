@@ -58,8 +58,8 @@ class ImmergasModeCard extends HubCard {
   /** anti-legionella P15: state, the boiler-side day/time (card options legionella_day / legionella_time) and a two-tap switch */
   private legRow(tchip: (o: string | undefined, l: string, v: string | null, col?: string, faint?: boolean) => unknown, hm: (m: number | null) => string | null) {
     if (!this.eid("p15")) return nothing;
-    const on = this.on("p15"), bad = this.bad("p15"), conf = this.isArmed("tg_p15"), col = bad ? "overlay1" : on ? "red" : "overlay2";
-    const run = on && this.n("dhw_active_set") >= 60 && !(this.n("dhw_active_set") <= this.n("dhw_set"));
+    const run = this.legRun();
+    const on = this.on("p15"), bad = this.bad("p15"), conf = this.isArmed("tg_p15"), col = run || on ? "red" : bad ? "overlay1" : "overlay2";
     const tm = this.timeOpt("legionella_time"), d = this.dayOpt("legionella_day"), nx = this.nextLeg(Date.now());
     // full weekday name in the UI language (4 Jan 2026 is a Sunday = day 0)
     const longDay = (wd: number) => {
@@ -70,9 +70,10 @@ class ImmergasModeCard extends HubCard {
     const when = (t: number) => this.dayName(new Date(t).getDay()) + " " + new Date(t).toLocaleTimeString(this.loc, { hour: "2-digit", minute: "2-digit" });
     // Dominus: P16 / P17 / P13 start empty until copied from the boiler - the row stays greyed and inactive until then
     const unset = this.dominus && !this.allSet("p16", "p17", "p13");
-    const st = bad ? this.t("brak odczytu", "no reading") : conf ? this.t("dotknij ponownie, aby potwierdzić", "tap again to confirm")
+    const st = conf ? this.t("dotknij ponownie, aby potwierdzić", "tap again to confirm")
+      : run ? this.t("dezynfekcja trwa · ", "disinfection running · ") + this.ago(this.legKey())
+      : bad ? this.t("brak odczytu", "no reading")
       : unset ? this.t("nie ustawione – wpisz z pieca dzień, godzinę i czas", "not set – enter the day, time and duration from the boiler")
-      : run ? this.t("dezynfekcja trwa · ", "disinfection running · ") + this.ago("dhw_active_set")
       : on ? (this.dominus || this.isCopy("p15") ? this.t("ustawiona na piecu", "set on the boiler") : this.t("włączona", "on")) + (nx > 0 ? this.t(" · następna ", " · next ") + when(nx) : "")
       : this.dominus || this.isCopy("p15") ? this.t("nieustawiona na piecu", "not set on the boiler") : this.t("wyłączona", "off");
     const sgDay = String(this.attr("p17", "suggested") ?? ""), sgT = String(this.attr("p16", "suggested") ?? "").slice(0, 5);

@@ -57,7 +57,8 @@ number:
     initial_value: 45
 
 sensor:
-  # 3015 = DHW setpoint the boiler is actually using (e.g. 60 during anti-legionella)
+  # 3015 = DHW setpoint the boiler is actually using (e.g. 60 during anti-legionella on a MAGIS PRO; a HERCULES PRO keeps
+  # the DHW setpoint here - its cycle shows only as 2090 bit 3, dd_legionella_running)
   - platform: template
     name: "${n_dd_sniff_29_w_3015}"
     id: dd_sniff_29_w_3015

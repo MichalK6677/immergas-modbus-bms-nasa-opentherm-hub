@@ -144,13 +144,15 @@ class ImmergasNowCard extends HubCard {
 
     // 4) anti-legionella (P15): no bus flag for a running cycle, so it is detected from the boiler raising the active
     //    DHW setpoint to >= 60 °C; otherwise: enabled since, last disinfection (cylinder >= 60 °C) and the learned interval
-    if (this.on("p15")) {
+    //    1.11.20: with the hub's flag (2090 bit 3) the running cycle is read from the boiler - its target is not on the bus
+    if (this.on("p15") || this.on("dd_leg_run")) {
       const act = this.n("dhw_active_set"), set = this.n("dhw_set"), tank = this.n("tank"), leg = this.hist?.leg ?? [];
-      if (act >= LEG_T && !(act <= set)) {
-        const t0 = new Date(this.so("dhw_active_set")?.last_changed ?? now).getTime(), base = Math.min(isNaN(set) ? 45 : set, tank);
-        const pr = Math.max(0, Math.min(1, (tank - base) / (act - base)));
+      if (this.legRun()) {
+        const t0 = new Date(this.so(this.legKey())?.last_changed ?? now).getTime(), base = Math.min(isNaN(set) ? 45 : set, tank);
+        const tgt = act >= LEG_T && !(act <= set) ? act : NaN;
+        const pr = isNaN(tgt) ? 1 : Math.max(0, Math.min(1, (tank - base) / (tgt - base)));
         rows.push(this.bar("p15", "mdi:bacteria-outline", "red", this.t("Anty-legionella · dezynfekcja trwa", "Anti-legionella · disinfection running"), pr, 1,
-          this.t("od ", "since ") + clock(t0, pl) + this.t(" · najpóźniej do ", " · at the latest until ") + clock(t0 + this.legHours() * 3600e3, pl) + " (P13)" + this.t(" · zasobnik ", " · cylinder ") + this.f(tank, 1, 1) + " / " + this.f(act, 0) + " °C",
+          this.t("od ", "since ") + clock(t0, pl) + this.t(" · najpóźniej do ", " · at the latest until ") + clock(t0 + this.legHours() * 3600e3, pl) + " (P13)" + this.t(" · zasobnik ", " · cylinder ") + this.f(tank, 1, 1) + (isNaN(tgt) ? "" : " / " + this.f(tgt, 0)) + " °C",
           dur(now - t0)));
       } else {
         const ls = leg[leg.length - 1], gaps = leg.slice(1).map((t, i) => t - leg[i]), iv = gaps.length ? median(gaps) : NaN;
@@ -493,6 +495,7 @@ class ImmergasNowCard extends HubCard {
     const fan = this.n("fan_real");
     if (fan > 0) sub.push(this.t("wentylator ", "fan ") + Math.round(fan) + this.t(" obr/min", " rpm"));
     if (this.on("backup_heater") || this.on("dhw_heater") || this.on("hub_dhw_heater_on")) sub.push(this.t("⚡ grzałka", "⚡ heater"));
+    if (this.legRun()) sub.push(this.t("🦠 anty-legionella", "🦠 anti-legionella"));
     if (gas && !run) sub.push(this.t("🔥 kocioł gazowy", "🔥 gas boiler"));
 
     const o = this.n("tw2"), r = this.n("tw1");

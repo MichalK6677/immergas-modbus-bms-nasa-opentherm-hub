@@ -8520,6 +8520,13 @@
   ]
  },
  {
+  "en": "● anti-legionella running",
+  "pl": "● trwa anty-legionella",
+  "files": [
+   "dhw.ts"
+  ]
+ },
+ {
   "en": "electricity",
   "pl": "prądu",
   "files": [
@@ -10757,15 +10764,15 @@
   ]
  },
  {
-  "en": "not set – enter the day, time and duration from the boiler",
-  "pl": "nie ustawione – wpisz z pieca dzień, godzinę i czas",
+  "en": "disinfection running · ",
+  "pl": "dezynfekcja trwa · ",
   "files": [
    "mode.ts"
   ]
  },
  {
-  "en": "disinfection running · ",
-  "pl": "dezynfekcja trwa · ",
+  "en": "not set – enter the day, time and duration from the boiler",
+  "pl": "nie ustawione – wpisz z pieca dzień, godzinę i czas",
   "files": [
    "mode.ts"
   ]
@@ -12183,6 +12190,13 @@
  {
   "en": "⚡ heater",
   "pl": "⚡ grzałka",
+  "files": [
+   "now.ts"
+  ]
+ },
+ {
+  "en": "🦠 anti-legionella",
+  "pl": "🦠 anty-legionella",
   "files": [
    "now.ts"
   ]

@@ -67,7 +67,7 @@ Verified on **three buses** (D+/D-, T-/T+, NASA) at standby and during a forced 
 | 2001 | **Status flags** (bitfield): **bit 3 = heat-pump module present** (clears with A11 = OFF; always 1 in normal operation); **bit 0 (8→9) = DHW request pending** — set ~9 min before every DHW cycle, cleared when the 3-way valve switches to DHW (15/15 cases); **bit 2 (8→12) = boiler anomaly active (2100 ≠ 0)** — matches to the second both E193 "Device in test mode" (service menu M) and E121 "Zone 1 panel missing". Dominus: `mb-water-request` | bit 0 = D09 (DHW request) | bitfield | CONFIRMED |
 | 2010 | Zone status / phase (bit 2 manual, bit 3 heat request, bit 6 comfort, bit 7 economy; **value 1 = bit 0 during air purge U50**, together with anomaly 139 "air purge in progress", 2000 → 0 and 2101 = 2) | — | bitfield | CONFIRMED |
 | 2015 / 2016 / 2017 | Zone setpoint / max / offset | — | ×0.1 °C | CONFIRMED |
-| **2090** | **Time-program state** (boiler reply to 2294, ~5 s later): **4 = manual (bit 2), 64 = auto / comfort phase (bit 6), 128 = auto / economy phase (bit 7)** (64 → 128 seen 3 s after the boiler clock was moved past the end of a comfort window). A HERCULES PRO sends **66 = 64 | 2** in auto – bit 1 is masked out. It follows 2294, which on a HERCULES PRO is the only time-program switch: the boiler menu "DHW time program" mirrors it and snaps back within 6–10 s | — | bitfield | CONFIRMED (link), CAND. (scope) |
+| **2090** | **Time-program state** (boiler reply to 2294, ~5 s later): **4 = manual (bit 2), 64 = auto / comfort phase (bit 6), 128 = auto / economy phase (bit 7)** (64 → 128 seen 3 s after the boiler clock was moved past the end of a comfort window). A HERCULES PRO sends **66 = 64 | 2** in auto – bit 1 is masked out. **Bit 3 (8) = the boiler's own anti-legionella cycle (P15) is running**: 74 = 64 | 8 | 2 from the start of the cycle until the cylinder reaches its target (65 °C on a HERCULES PRO) – the hub shows it as *Anti-legionella cycle (boiler)*. It follows 2294, which on a HERCULES PRO is the only time-program switch: the boiler menu "DHW time program" mirrors it and snaps back within 6–10 s | — | bitfield | CONFIRMED (link), CAND. (scope) |
 | 2100 | Fault code (0 = none, e.g. 142 = Dominus missing) | — | enum | CONFIRMED |
 | 2218 / 2219 | Zone max / offset (copies) | — | ×0.1 °C | CONFIRMED |
 | 2293 | DHW temperature (copy) | — | ×0.1 °C | CONFIRMED |
@@ -81,7 +81,7 @@ Verified on **three buses** (D+/D-, T-/T+, NASA) at standby and during a forced 
 | **3012** | **Main generator return** | **D08** (live) | ×0.1 °C | CONFIRMED |
 | **3013** | **Secondary generator (gas boiler) flow** ("Flow temp. 2"; DHW by gas → 65.6 °C) | D01 (first manual entry, unverified) | ×0.1 °C | CONFIRMED (code MANUAL) |
 | **3014** | **Secondary generator return** ("Return temp. 2") | no D code | ×0.1 °C | CONFIRMED |
-| **3015** | **Active DHW setpoint** used by the boiler (60 during anti-legionella) | D05 | ×0.1 °C | CONFIRMED |
+| **3015** | **Active DHW setpoint** used by the boiler (60 during anti-legionella on a MAGIS PRO; a HERCULES PRO keeps the DHW setpoint here during the cycle) | D05 | ×0.1 °C | CONFIRMED |
 | 3016 | DHW cylinder temperature | D03 | ×0.1 °C | CONFIRMED |
 | 3031 | Board firmware version (600 = 6.00) | D91 | ×0.01 | CONFIRMED |
 | **6102** | **A31 "Zone 1 room thermostat"** passed to the panel: **RPT = 0, RP = 2**; setting RT left 6102 at 0, so RT most likely = 0 like RPT (2 only when the panel is the sole thermostat). Changing A31 RPT → RP switched 6102 0 → 2, and back RP → RPT 2 → 0 (both directions verified) | **A31** | enum | CONFIRMED (RT = CAND.) |
@@ -145,7 +145,7 @@ Same register set as 0x29 (2005/2006, 2015–2017, 2210–2216, …), per-zone v
 - **E142** — Dominus (0x33) missing.
 
 ## Anti-legionella (P15)
-Parameter **P15** (anti-legionella enable; P13 duration, P16 hour, P17 day) is **not transmitted on D+/D-** — comparing sniffer baselines with P15 = ON and P15 = OFF showed no constant register change besides the DHW setpoint. Only the **effect** is visible: the boiler's active DHW setpoint in **3015** goes up during the cycle. Up to v1.1.0 the emulator adopted 3015 as a user setpoint and fed it back as the panel, leaving the setpoint stuck at 60 °C — fixed in v1.2.0.
+Parameter **P15** (anti-legionella enable; P13 duration, P16 hour, P17 day) is **not transmitted on D+/D-** — comparing sniffer baselines with P15 = ON and P15 = OFF showed no constant register change besides the DHW setpoint. Only the **effect** is visible: the boiler's active DHW setpoint in **3015** goes up during the cycle, and **2090 bit 3** is set while it runs. A HERCULES PRO keeps 3015 and 2095 at the DHW setpoint and heats the cylinder to 65 °C (compressor to ~55 °C, the electric heater the rest) – there only the cylinder temperature and 2090 bit 3 show the cycle. Up to v1.1.0 the emulator adopted 3015 as a user setpoint and fed it back as the panel, leaving the setpoint stuck at 60 °C — fixed in v1.2.0.
 
 ## Still unknown — help welcome
 - 0x1E: I15, I20, I37, I44–46, W5 (always 0), R2–6, R15–18; flags I18/21/41/42 — **D78** candidates (needs cooling or defrost data).

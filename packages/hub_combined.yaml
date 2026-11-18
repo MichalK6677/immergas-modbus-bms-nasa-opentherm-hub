@@ -252,6 +252,9 @@ binary_sensor:
       // (the heat pump at its limit) - the valve switch and the compressor start alone take about 2 min
       if (!id(hub_dhw_active)) return false;
       if (id(hub_dhw_used_hp) ? now - id(hub_dhw_hp_last_ms) < 90000UL : now - id(hub_dhw_start_ms) < 300000UL) return false;
+      // 1.11.20: the boiler's anti-legionella cycle (2090 bit 3) heats above every setpoint on the bus (65 °C on a
+      // HERCULES PRO, 3015 stays at the DHW setpoint) - with the compressor stopped the heater runs until the bit drops
+      if (id(dd_legionella_running).state) return true;
       float t = id(dd_dhw_temp_sensor).state;
       float set = id(dd_cwu_setpoint_number).state, cf = id(dd_dhw_comfort_set).state;
       if (std::isnan(set) || (!std::isnan(cf) && cf > set)) set = cf;
@@ -747,12 +750,14 @@ text_sensor:
       float d99f = id(tt_system_state_raw).state;
       int d99 = std::isnan(d99f) ? -1 : (int) d99f;
       bool d09 = d99 < 0 && id(dd_piec_zadanie_cwu_oczek).state;   // no T-/T+: D09 from D+/D-
-      if (d99 == 61 || d99 == 62 || d99 == 64 || id(tt_pdu_3028).state == 1.0f || d09) what = "${t_hub_dhw}";
+      std::string dhw = "${t_hub_dhw}";
+      if (id(dd_legionella_running).state) dhw += " · ${t_hub_legionella}";   // 1.11.20: boiler's anti-legionella cycle
+      if (d99 == 61 || d99 == 62 || d99 == 64 || id(tt_pdu_3028).state == 1.0f || d09) what = dhw;
       else if (id(f1f2_outdoor_operation_state).state.find("${t_hub_ff_cooling_match}") != std::string::npos) what = "${t_hub_cooling}";
       else what = "${t_hub_heating}";
       bool heater = id(hub_dhw_heater_on).state || d99 == 64;   // DHW electric heater (T-/T+ D99 64 or assumed)
-      if (heater && !hp && !boiler) return std::string("${t_hub_heater}: ${t_hub_dhw}");
-      if (heater && hp && !boiler) return std::string("${t_hub_hp_heater}: ${t_hub_dhw}");
+      if (heater && !hp && !boiler) return std::string("${t_hub_heater}: ") + dhw;
+      if (heater && hp && !boiler) return std::string("${t_hub_hp_heater}: ") + dhw;
       if (hp && boiler) return std::string("${t_hub_hp_boiler}: ") + what;
       if (hp) return std::string("${t_hub_hp}: ") + what;
       if (boiler) return std::string("${t_hub_boiler}: ") + what;

@@ -355,7 +355,7 @@ input register (func 04).
 | 2005 / 2006 | D41 | room temperature / humidity (the only panel values used for control) | R |
 | 2010 | — | zone phase: bit2 manual, bit3 heating request, bit6 comfort, bit7 eco; 1 = venting U50 | W |
 | 2015 / 2016 / 2017 | U03 | zone 1 setpoint / max / offset | RW |
-| 2090 | — | time program state: 4 manual, 64 auto-comfort, 128 auto-eco (bit 1 masked: 66 = comfort) | W |
+| 2090 | — | time program state: 4 manual, 64 auto-comfort, 128 auto-eco (bit 1 masked: 66 = comfort); bit 3 = anti-legionella cycle running (74) | W |
 | 2095 | D05 | DHW setpoint | RW |
 | 2100 / 2101 | — | fault code (0 none, e.g. 121, 142, 193) / reset | W |
 | 2210–2216 | U07 | heating and cooling Comfort/Eco, humidity | RW |
@@ -369,7 +369,7 @@ input register (func 04).
 | 3003 | D04 | **calculated flow setpoint** (curve + U03; 0 without demand) | W |
 | 3011 / 3012 | D20 / D08 | main generator (heat pump): flow / return | W |
 | 3013 / 3014 | D01 / — | auxiliary generator (gas boiler): flow / return | W |
-| 3015 | D05 | **active** DHW setpoint (e.g. 60 °C during anti-legionella) | W |
+| 3015 | D05 | **active** DHW setpoint (e.g. 60 °C during anti-legionella on a MAGIS PRO; unchanged on a HERCULES PRO) | W |
 | 3016 | D03 | DHW cylinder temperature | W |
 | 3031 / 3042 | D91 | boiler firmware (600 = 6.00) / panel (201 = 2.01) | W / R |
 | 4199 (0x33) | A13 | number of zones | W |
@@ -417,8 +417,10 @@ pump (0x1E R1/I10) and to the Samsung (NASA 0x4247).
 
 - Integration parameters I01–I10, A05, A12, A18, P07–P24, T02–T23, U11 and the service menu M **do not change D+/D-
   registers**. Exceptions: E193 in menu M (2001 bit2 + 2100 = 193) and 3002 after a P07 change.
-- **Anti-legionella P15** (P13 time, P16 hour, P17 day) is not transmitted. Only the effect is visible: the active DHW
-  setpoint 3015 rises for the cycle. The emulator must not adopt it as the user setpoint, or it would lock DHW at
+- **Anti-legionella P15** (P13 time, P16 hour, P17 day) is not transmitted. Only the effect is visible: **2090 bit 3**
+  is set for the whole cycle (*Anti-legionella cycle (boiler)*), and on a MAGIS PRO the active DHW setpoint 3015 rises for
+  it. A HERCULES PRO keeps 3015 / 2095 at the DHW setpoint and heats the cylinder to 65 °C: the compressor stops at
+  ~55 °C and the electric heater does the rest, which the hub counts as heater energy while the bit is set. The emulator must not adopt it as the user setpoint, or it would lock DHW at
   60 °C.
 - Local panel settings (frost protection temperature, panel antibacterial cycle, dehumidification off, minimum cooling
   setpoint, holiday program) do not reach the bus.

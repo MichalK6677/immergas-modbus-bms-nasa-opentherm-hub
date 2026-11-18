@@ -60,6 +60,7 @@ substitutions:
   t_hub_idle: "Stillstand"
   t_hub_no_data: "Keine Daten"
   t_hub_heater: "Heizstab"
+  t_hub_legionella: "Legionellenschutz"
   t_hub_hp_heater: "WP + Heizstab"
   t_hub_ff_cooling_match: "Kühlen"
   # boiler menu settings that no bus carries (hub_boiler_params)

@@ -60,6 +60,7 @@ substitutions:
   t_hub_idle: "Stilstand"
   t_hub_no_data: "Geen gegevens"
   t_hub_heater: "Elektrisch element"
+  t_hub_legionella: "legionellapreventie"
   t_hub_hp_heater: "WP + element"
   t_hub_ff_cooling_match: "Koelen"
   # boiler menu settings that no bus carries (hub_boiler_params)

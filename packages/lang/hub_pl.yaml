@@ -60,6 +60,7 @@ substitutions:
   t_hub_idle: "Postój"
   t_hub_no_data: "Brak danych"
   t_hub_heater: "Grzałka"
+  t_hub_legionella: "anty-legionella"
   t_hub_hp_heater: "Pompa + grzałka"
   t_hub_ff_cooling_match: "Chłodz"
   # boiler menu settings that no bus carries (hub_boiler_params)

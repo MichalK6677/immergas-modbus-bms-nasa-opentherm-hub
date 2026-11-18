@@ -60,6 +60,7 @@ substitutions:
   t_hub_idle: "Idle"
   t_hub_no_data: "No data"
   t_hub_heater: "Electric heater"
+  t_hub_legionella: "anti-legionella"
   t_hub_hp_heater: "Heat pump + heater"
   t_hub_ff_cooling_match: "Cool"
   # boiler menu settings that no bus carries (hub_boiler_params)

@@ -60,6 +60,7 @@ substitutions:
   t_hub_idle: "Áll"
   t_hub_no_data: "Nincs adat"
   t_hub_heater: "Fűtőbetét"
+  t_hub_legionella: "legionella elleni"
   t_hub_hp_heater: "HSZ + fűtőbetét"
   t_hub_ff_cooling_match: "Hűtés"
   # boiler menu settings that no bus carries (hub_boiler_params)

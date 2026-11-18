@@ -70,7 +70,8 @@ class ImmergasDhwCard extends HubCard {
       <div class="lbl">${lbl}</div><div class="bv" style="color:${c(col)};text-shadow:0 0 10px ${ca(col, 0.4)}">${this.f(v, 2, 2)}</div></div>`;
     return html`
       ${this.head("mdi:water-boiler", this.t("Ostatni cykl CWU", "Last DHW cycle"),
-        html`<span class="tabs">${running ? html`<span style="color:${c("yellow")};font-weight:800">${this.t("● trwa grzanie", "● heating now")}</span>` : nothing}
+        html`<span class="tabs">${this.legRun() ? html`<span style="color:${c("red")};font-weight:800">${this.t("● trwa anty-legionella", "● anti-legionella running")}</span>`
+          : running ? html`<span style="color:${c("yellow")};font-weight:800">${this.t("● trwa grzanie", "● heating now")}</span>` : nothing}
           ${this.mtx ? nothing : html`${tab("combo", "Combo")}${tab("pro", "Pro")}`}</span>`)}
       <div class="top" style=${box(sc, true)} @click=${() => this.moreInfo("dhw_src")}>
         <ha-icon icon=${si} style="color:${c(sc)}"></ha-icon>

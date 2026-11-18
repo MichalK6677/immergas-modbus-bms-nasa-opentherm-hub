@@ -60,6 +60,7 @@ substitutions:
   t_hub_idle: "Pokoj"
   t_hub_no_data: "Žiadne dáta"
   t_hub_heater: "Ohrievač"
+  t_hub_legionella: "antilegionela"
   t_hub_hp_heater: "TČ + ohrievač"
   t_hub_ff_cooling_match: "Chladenie"
   # boiler menu settings that no bus carries (hub_boiler_params)
