@@ -334,6 +334,15 @@ export const NAMES = {
   ha_join_out: ["Hub", ["Zewnętrzna przy ostatnim dołączeniu kotła", "Outdoor at the last boiler join", "Venkovní při posledním připojení kotle", "Außentemp. bei der letzten Kesselzuschaltung", "Exterior en la última entrada de la caldera", "Extérieur au dernier appoint chaudière", "Külső hőm. az utolsó kazánbekapcsoláskor", "Esterna all'ultimo inserimento caldaia", "Buitentemp. bij laatste ketelbijschakeling", "Exterior na última entrada da caldeira", "Vonkajšia pri poslednom pripojení kotla"]],
   ha_bivalent: ["Hub", ["Punkt biwalentny (wyuczony)", "Bivalent point (learned)", "Bivalentní bod (naučený)", "Bivalenzpunkt (gelernt)", "Punto bivalente (aprendido)", "Point de bivalence (appris)", "Bivalens pont (tanult)", "Punto di bivalenza (appreso)", "Bivalentiepunt (geleerd)", "Ponto bivalente (aprendido)", "Bivalentný bod (naučený)"]],
   ha_freeze: ["Hub", ["Ryzyko zamarznięcia", "Freeze risk", "Riziko zamrznutí", "Frostgefahr", "Riesgo de congelación", "Risque de gel", "Fagyveszély", "Rischio gelo", "Vorstrisico", "Risco de congelação", "Riziko zamrznutia"]],
+  hub_leg_enable: ["Hub", ["Cykl legionelli", "Legionella cycle"]],
+  hub_leg_every: ["Hub", ["Legionella co", "Legionella every"]],
+  hub_leg_day: ["Hub", ["Legionella dzień", "Legionella weekday"]],
+  hub_leg_time: ["Hub", ["Legionella godzina", "Legionella start time"]],
+  hub_leg_target: ["Hub", ["Legionella temperatura", "Legionella target"]],
+  hub_leg_timeout: ["Hub", ["Legionella limit czasu", "Legionella timeout"]],
+  hub_leg_running: ["Hub", ["Legionella trwa", "Legionella running"]],
+  hub_leg_state: ["Hub", ["Legionella stan", "Legionella state"]],
+  hub_leg_now: ["Hub", ["Legionella teraz", "Legionella now"]],
 } as const satisfies Record<string, readonly [string, readonly string[]]>;
 // keys found only on the Immergas Dominus integration (see hub.ts)
 export type Key = keyof typeof NAMES | "dom_ch_demand" | "dom_dhw_request" | "dom_last_read" | "dom_failed" | "dom_hum_target" | "dom_flow_target"

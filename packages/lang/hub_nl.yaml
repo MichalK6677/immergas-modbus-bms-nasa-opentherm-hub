@@ -134,3 +134,15 @@ substitutions:
   t_hub_rc_in_use: "kalender vandaag gebruikt door een zone / SWW"
   t_hub_rc_no_panel: "vereist het geëmuleerde zone 1-paneel"
   t_hub_rc_inside: "er loopt al een tijdvak"
+
+  # anti-legionella cycle (hub_legionella)
+  n_hub_leg_enable: "${hub_name_prefix} - Legionella cycle"
+  n_hub_leg_every: "${hub_name_prefix} - Legionella every"
+  n_hub_leg_day: "${hub_name_prefix} - Legionella weekday"
+  n_hub_leg_time: "${hub_name_prefix} - Legionella start time"
+  n_hub_leg_target: "${hub_name_prefix} - Legionella target"
+  n_hub_leg_timeout: "${hub_name_prefix} - Legionella timeout"
+  n_hub_leg_running: "${hub_name_prefix} - Legionella running"
+  n_hub_leg_state: "${hub_name_prefix} - Legionella state"
+  n_hub_leg_now: "${hub_name_prefix} - Legionella now"
+

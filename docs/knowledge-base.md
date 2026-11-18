@@ -254,6 +254,28 @@ usually in between.
 `Project version` (hub config number). The *Immergas DD - Author / GitHub* entities from the DD package are removed
 and replaced by the hub entities.
 
+### Anti-legionella from the hub (package `hub_legionella`, optional)
+
+The boiler's own anti-legionella (P15) cannot be read or scheduled below weekly, and on a HERCULES PRO 9 it runs to
+**65 °C with no hold** and stays invisible on the bus except for the cylinder temperature and one bit of `2090`
+(shown as *Code 74*). This package runs its own cycle instead:
+
+- it switches the appliance's **DHW time program to Manual** (`2294 = 0`) and writes the DHW setpoint into `2095` (the
+  value the boiler reads from the emulated panel). In Manual the boiler applies no Comfort/Eco phases, so nothing can
+  override the target — no re-assert loop and no interruption of the heating;
+- it finishes when the cylinder (**D03 / 3016**) reaches the target, on the **timeout** (1–6 h) or when you press the
+  button again; then it writes the previous setpoint back and returns the time program to what it was (normally Auto),
+  so the DHW calendar continues. In a cycle, changing the setpoint or switching the program back to Auto cancels it;
+- schedule: every **1–4 weeks**, a weekday and a time (e.g. every 2 weeks, Wednesday 02:00). Free choice of target
+  **60–65 °C**; measured on a HERCULES PRO 9: the heat pump reaches ~55 °C, above that the electric heater works;
+  30 → 60 °C takes about **80 min**, 30 → 65 °C about **100 min**;
+- all state is in flash with epoch timestamps: a hub restart resumes the cycle, an overdue one is finished at boot.
+  If the hub boots without a clock (HA down) for 15 min the cycle is aborted and the setpoint restored.
+- the cycle costs two writes at the start (the time-program mode and the setpoint) and the same two at the end. The 20 s
+  interval that checks the schedule only compares the clock with a stored timestamp; nothing is polled while idle.
+
+Set **P15 to *None*** on the boiler, otherwise it can start its own 65 °C cycle in parallel.
+
 ### Configuration entities for the cards (package `hub_boiler_params`)
 
 Settings that none of the buses carries; set them once to the same values as in the boiler menu. They change nothing

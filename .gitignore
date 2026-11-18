@@ -9,3 +9,6 @@ cards/node_modules/
 # Python caches of the components and tools
 __pycache__/
 *.pyc
+
+# local browser screenshots of the card checks
+.playwright-cli/

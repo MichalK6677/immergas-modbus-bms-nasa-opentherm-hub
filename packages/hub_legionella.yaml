@@ -1,0 +1,333 @@
+# Immergas hub - package "hub_legionella": a DHW anti-legionella cycle driven by the hub.
+#
+# The boiler's own P15 program is invisible on the bus and, measured on a HERCULES PRO 9 (18 Nov 2026), it runs to
+# 65 °C with no hold and cannot be scheduled below weekly or read back. This package schedules its own cycle:
+#  - it switches the appliance's DHW time program to Manual (2294 = 0) and writes the DHW target into 2095 (the value
+#    the boiler reads from the emulated panel). In Manual there are no Comfort/Eco transitions at all, so nothing can
+#    override the target - no re-assert and no interruption of the heating;
+#  - it finishes when the cylinder (D03) reaches the target, on timeout, or when you press the button again;
+#  - then it writes the previous setpoint back and returns the time program to what it was (normally Auto), so the DHW
+#    calendar continues;
+#  - a setpoint change or a switch back to Auto by somebody during the cycle cancels it (the human wins);
+#  - all state is in flash with epoch timestamps: a reboot resumes the cycle, an overdue one is finished at boot.
+#
+# Facts this relies on (measured on a HERCULES PRO 9 with Emulate Panel Zone 1):
+#  - 2095 = the DHW setpoint the panel serves; writing 60 made the boiler apply 60 (display "60 MAN");
+#  - D03 = DHW cylinder temperature, 0.1 °C, refreshed every few seconds;
+#  - the heat pump reaches ~55 °C, above that the electric heater continues (~0.2-0.3 K/min);
+#  - 30 -> 60 °C takes roughly 1 h 20.
+#
+# Part of jotuera/immergas-modbus-bms-nasa-opentherm-hub (PolyForm Noncommercial 1.0.0). Loaded through `packages:`.
+# Needs dd_core (dd_ha_time), dd_schedules (the calendars), dd_dominus (the time-program select, 2294) and the
+# emulated zone 1 panel.
+
+globals:
+  - id: hub_leg_run          # cycle in progress
+    type: bool
+    restore_value: yes
+    initial_value: "false"
+  - id: hub_leg_start        # epoch of the start
+    type: uint32_t
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_leg_end          # epoch of the timeout
+    type: uint32_t
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_leg_due          # epoch of the next scheduled run, 0 = not computed yet
+    type: uint32_t
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_leg_cfg          # weekday/time/every snapshot the due was computed for
+    type: int
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_leg_runtgt       # target of the running cycle (a mid-cycle change applies to the next run)
+    type: float
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_leg_prev         # setpoint wanted before the cycle
+    type: float
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_leg_mode         # time-program index to restore (0 = Manual, 1 = Auto), -1 = nothing saved
+    type: int
+    restore_value: yes
+    initial_value: "-1"
+  - id: hub_leg_max          # highest cylinder temperature of the cycle
+    type: float
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_leg_max_ms       # millis of the last hub_leg_max update - flash writes are throttled to 1/min
+    type: uint32_t
+    initial_value: "0"
+  - id: hub_leg_lastmax      # last finished cycle: highest temperature
+    type: float
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_leg_lastmin      # last finished cycle: minutes
+    type: int
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_leg_last         # epoch when the last cycle finished - the state text shows the result for 30 min
+    type: uint32_t
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_leg_result       # last result: 0 none, 1 done, 2 timeout, 3 cancelled, 4 cancelled (no clock)
+    type: int
+    restore_value: yes
+    initial_value: "0"
+  - id: hub_leg_wd           # millis when the clock was last seen invalid (watchdog)
+    type: uint32_t
+    initial_value: "0"
+
+switch:
+  - platform: template
+    id: hub_leg_enable
+    name: "${n_hub_leg_enable}"
+    icon: mdi:bacteria-outline
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    entity_category: config
+
+select:
+  - platform: template
+    id: hub_leg_every
+    name: "${n_hub_leg_every}"
+    icon: mdi:calendar-sync
+    optimistic: true
+    restore_value: true
+    entity_category: config
+    options:
+      - "Every week"
+      - "Every 2 weeks"
+      - "Every 3 weeks"
+      - "Every 4 weeks"
+    initial_option: "Every 2 weeks"
+  - platform: template
+    id: hub_leg_day
+    name: "${n_hub_leg_day}"
+    icon: mdi:calendar-week
+    optimistic: true
+    restore_value: true
+    entity_category: config
+    options:
+      - "Monday"
+      - "Tuesday"
+      - "Wednesday"
+      - "Thursday"
+      - "Friday"
+      - "Saturday"
+      - "Sunday"
+    initial_option: "Wednesday"
+
+datetime:
+  - platform: template
+    id: hub_leg_time
+    name: "${n_hub_leg_time}"
+    type: time
+    optimistic: true
+    restore_value: true
+    initial_value: "02:00:00"
+    entity_category: config
+    icon: mdi:clock-start
+
+number:
+  - platform: template
+    id: hub_leg_target
+    name: "${n_hub_leg_target}"
+    icon: mdi:thermometer-high
+    unit_of_measurement: "°C"
+    min_value: 60
+    max_value: 65
+    step: 1
+    mode: box
+    optimistic: true
+    restore_value: true
+    initial_value: 60
+    entity_category: config
+  - platform: template
+    id: hub_leg_timeout
+    name: "${n_hub_leg_timeout}"
+    icon: mdi:timer-outline
+    unit_of_measurement: h
+    min_value: 1
+    max_value: 6
+    step: 1
+    mode: box
+    optimistic: true
+    restore_value: true
+    initial_value: 3
+    entity_category: config
+
+binary_sensor:
+  - platform: template
+    id: hub_leg_running
+    name: "${n_hub_leg_running}"
+    icon: mdi:bacteria
+    lambda: return id(hub_leg_run);
+
+text_sensor:
+  - platform: template
+    id: hub_leg_state
+    name: "${n_hub_leg_state}"
+    icon: mdi:information-outline
+    update_interval: 30s
+    lambda: |-
+      char b[96];
+      auto now = id(dd_ha_time).now();
+      if (id(hub_leg_run)) {
+        float tank = id(dd_dhw_temp_sensor).state;
+        unsigned el = (now.is_valid() && id(hub_leg_start) > 0) ? (now.timestamp - id(hub_leg_start)) / 60 : 0;
+        snprintf(b, sizeof(b), "heating %.1f/%.1f °C (%u min)", tank, id(hub_leg_runtgt), el);
+        return std::string(b);
+      }
+      // time to the next run, also shown after a finished cycle
+      char nx[48] = "";
+      if (now.is_valid() && id(hub_leg_due) > now.timestamp) {
+        int32_t left = (int32_t) (id(hub_leg_due) - now.timestamp);
+        if (left >= 86400) snprintf(nx, sizeof(nx), "next %d d %d h", left / 86400, (left % 86400) / 3600);
+        else snprintf(nx, sizeof(nx), "next %d h %d min", left / 3600, (left % 3600) / 60);
+      }
+      if (id(hub_leg_result) != 0 && now.is_valid() && id(hub_leg_last) > 0 && now.timestamp - id(hub_leg_last) < 1800) {
+        const char *r = id(hub_leg_result) == 1 ? "done" : id(hub_leg_result) == 2 ? "timeout"
+                        : id(hub_leg_result) == 3 ? "cancelled" : "cancelled (no clock)";
+        snprintf(b, sizeof(b), "%s %.1f °C · %d min%s%s", r, id(hub_leg_lastmax), id(hub_leg_lastmin),
+                 nx[0] ? " · " : "", nx);
+        return std::string(b);
+      }
+      if (!id(hub_leg_enable).state) return std::string("off");
+      if (!now.is_valid() || id(hub_leg_due) == 0) return std::string("waiting for time");
+      return std::string(nx[0] ? nx : "armed");
+
+script:
+  # start a cycle: keep the current setpoint and time-program mode, switch the DHW program to Manual (no Comfort/Eco
+  # phases at all), then write the target - the boiler heats to it and nothing can override it
+  - id: hub_leg_begin
+    mode: restart
+    then:
+      - lambda: |-
+          auto now = id(dd_ha_time).now();
+          if (!now.is_valid() || std::isnan(id(hub_leg_target).state)) return;
+          id(hub_leg_runtgt) = id(hub_leg_target).state;
+          id(hub_leg_prev) = id(dd_cwu_setpoint_number).state;
+          id(hub_leg_mode) = (int) id(dd_sel_programy_czasowe).active_index().value_or(1);
+          id(hub_leg_start) = now.timestamp;
+          id(hub_leg_end) = now.timestamp + (uint32_t) (id(hub_leg_timeout).state * 3600.0f);
+          id(hub_leg_max) = id(dd_dhw_temp_sensor).state;
+          id(hub_leg_max_ms) = 0;
+          id(hub_leg_run) = true;
+          id(hub_leg_result) = 0;
+          id(dd_sel_programy_czasowe).make_call().set_index(0).perform();   // 0 = Manual: no Comfort/Eco phases
+          id(dd_cwu_setpoint_number).make_call().set_value(id(hub_leg_runtgt)).perform();
+          ESP_LOGW("hub_leg", "start: target %.1f, timeout %.1f h, time program was %d", id(hub_leg_runtgt),
+                   id(hub_leg_timeout).state, id(hub_leg_mode));
+          id(hub_leg_state).update();
+
+  # end a cycle and put the setpoint and the time-program mode back: 1 = done, 2 = timeout, 3 = cancelled, 4 = no clock
+  - id: hub_leg_finish
+    mode: restart
+    parameters:
+      reason: int
+    then:
+      - lambda: |-
+          if (!id(hub_leg_run)) return;
+          float back = id(hub_leg_prev) > 0 ? id(hub_leg_prev) : 0;
+          if (back > 0) id(dd_cwu_setpoint_number).make_call().set_value(back).perform();
+          if (id(hub_leg_mode) >= 0) {
+            id(dd_sel_programy_czasowe).make_call().set_index(id(hub_leg_mode)).perform();   // back to Auto (or as it was)
+            id(hub_leg_mode) = -1;
+          }
+          float tank = id(dd_dhw_temp_sensor).state;
+          if (!std::isnan(tank) && tank > id(hub_leg_max)) id(hub_leg_max) = tank;   // final peak
+          auto now = id(dd_ha_time).now();
+          id(hub_leg_lastmax) = id(hub_leg_max);
+          id(hub_leg_lastmin) = (now.is_valid() && id(hub_leg_start) > 0) ? (int) ((now.timestamp - id(hub_leg_start)) / 60) : 0;
+          id(hub_leg_last) = now.is_valid() ? now.timestamp : 0;
+          id(hub_leg_result) = reason;
+          id(hub_leg_run) = false;
+          id(hub_leg_end) = 0;
+          id(hub_leg_wd) = 0;
+          ESP_LOGW("hub_leg", "finished (%d): max %.1f, setpoint back to %.1f", reason, id(hub_leg_lastmax), back);
+          id(hub_leg_state).update();
+
+button:
+  - platform: template
+    id: hub_leg_now
+    name: "${n_hub_leg_now}"
+    icon: mdi:bacteria-outline
+    on_press:
+      - lambda: |-
+          // pressed while running: cancel and restore at once (a manual run does not touch the schedule)
+          if (id(hub_leg_run)) { id(hub_leg_finish)->execute(3); return; }
+          id(hub_leg_begin)->execute();
+
+interval:
+  - interval: 20s
+    then:
+      - lambda: |-
+          auto now = id(dd_ha_time).now();
+          // ---------- idle: the schedule ----------
+          if (!id(hub_leg_run)) {
+            if (id(hub_leg_mode) >= 0) {
+              // a cycle was interrupted (crash, OTA) without restoring the time-program mode
+              id(dd_sel_programy_czasowe).make_call().set_index(id(hub_leg_mode)).perform();
+              id(hub_leg_mode) = -1;
+              ESP_LOGW("hub_leg", "time program restored after an interrupted cycle");
+            }
+            if (!id(hub_leg_enable).state) return;
+            if (!now.is_valid()) return;
+            int want = (int) id(hub_leg_day).active_index().value_or(2);          // 0 = Monday
+            int tm = (int) id(hub_leg_time).hour * 60 + (int) id(hub_leg_time).minute;
+            int ev = (int) id(hub_leg_every).active_index().value_or(1);          // 0 = every week
+            int cfg = want * 1000000 + tm * 10 + ev;
+            int wd = (now.day_of_week + 5) % 7;                                   // ESPTime: 1 = Sunday
+            int cur = now.hour * 60 + now.minute;
+            if (cfg != id(hub_leg_cfg) || id(hub_leg_due) == 0) {
+              int add = (want - wd + 7) % 7;
+              int32_t secs = add * 86400 + (tm - cur) * 60 - (int) now.second;
+              uint32_t due = (uint32_t) ((int32_t) now.timestamp + secs);
+              if (secs < 0) due += 7 * 86400;   // that time has passed today - next week
+              id(hub_leg_due) = due;
+              id(hub_leg_cfg) = cfg;
+              id(hub_leg_state).update();
+            }
+            if ((int32_t) (now.timestamp - id(hub_leg_due)) >= 0) {
+              // advance past the missed slots before starting, so a hub that was off for a while does not
+              // fire several cycles in a row (and never skips the slot it just reached)
+              do {
+                id(hub_leg_due) = id(hub_leg_due) + (uint32_t) ((ev + 1) * 7 * 86400);
+              } while ((int32_t) (id(hub_leg_due) - now.timestamp) <= 0);
+              id(hub_leg_begin)->execute();
+            }
+            return;
+          }
+          // ---------- running ----------
+          if (!now.is_valid()) {
+            // booted while Home Assistant was away: never leave the setpoint up for ever
+            if (id(hub_leg_wd) == 0) id(hub_leg_wd) = millis();
+            else if (millis() - id(hub_leg_wd) > 900000UL) id(hub_leg_finish)->execute(4);
+            return;
+          }
+          id(hub_leg_wd) = 0;
+          float tank = id(dd_dhw_temp_sensor).state;
+          // the peak is written to flash at most once a minute (restored globals are saved on change)
+          if (!std::isnan(tank) && tank > id(hub_leg_max) &&
+              (id(hub_leg_max_ms) == 0 || millis() - id(hub_leg_max_ms) > 60000UL)) {
+            id(hub_leg_max) = tank;
+            id(hub_leg_max_ms) = millis();
+          }
+          // finish: cylinder reached / timeout / somebody touched the setpoint or the time program
+          if (!std::isnan(tank) && tank >= id(hub_leg_runtgt) - 0.2f) { id(hub_leg_finish)->execute(1); return; }
+          if ((int32_t) (now.timestamp - id(hub_leg_end)) >= 0) { id(hub_leg_finish)->execute(2); return; }
+          if ((int) id(dd_sel_programy_czasowe).active_index().value_or(1) != 0) {
+            // the time program was switched back to Auto by somebody: the phases would override the target
+            ESP_LOGW("hub_leg", "time program switched back to Auto - cycle cancelled");
+            id(hub_leg_finish)->execute(3);
+            return;
+          }
+          float cur = id(dd_cwu_setpoint_number).state;
+          if (!std::isnan(cur) && fabsf(cur - id(hub_leg_runtgt)) > 0.05f) {
+            ESP_LOGW("hub_leg", "setpoint changed to %.1f by somebody - cycle cancelled", cur);
+            id(hub_leg_finish)->execute(3);   // the human wins
+          }

@@ -12,7 +12,8 @@ class ImmergasHubStrategy {
     const card = (type: string, extra: Record<string, unknown> = {}) => ({ type: "custom:" + type, ...themeOpt(config), ...(config.variant ? { variant: config.variant } : {}), ...(config.bms !== undefined ? { bms: config.bms } : {}), ...extra });
     // the Automations card only when the HA automation switches exist (or an own list is given in `automations.items`)
     const autos = !!config.automations?.items || Object.keys(hass?.states ?? {}).some((e) => e.startsWith("input_boolean.auto_pompa_"));
-    return {
+    // the Legionella card is shown only when the optional hub_legionella package is loaded
+    const leg = Object.keys(hass?.states ?? {}).some((e) => /legionella_now$|legionella_cycle$/.test(e));    return {
       title: config.title ?? t("Pompa ciepła", "Heat pump"),
       views: [
         {
@@ -23,6 +24,7 @@ class ImmergasHubStrategy {
               card("immergas-links-card", { grid_options: { columns: "full" } })] },
             { type: "grid", cards: [card("immergas-now-card", { grid_options: { columns: "full" }, ...(config.now ?? {}) }), card("immergas-setpoints-card", { grid_options: { columns: "full" }, ...(config.setpoints ?? {}) })] },
             { type: "grid", cards: [card("immergas-mode-card", { grid_options: { columns: "full" }, ...(config.mode ?? {}) }),
+              ...(leg ? [card("immergas-legionella-card", { grid_options: { columns: "full" } })] : []),
               card("immergas-busmap-card", { grid_options: { columns: "full" } })] },
             { type: "grid", cards: [card("immergas-curve-card", { grid_options: { columns: "full" }, ...(config.curve ?? {}) }),
               card("immergas-gas-card", { grid_options: { columns: "full" } })] },

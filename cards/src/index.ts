@@ -13,6 +13,7 @@ import "./cards/circuits";
 import "./cards/schedule";
 import "./cards/f1f2";
 import "./cards/dhw";
+import "./cards/legionella";
 import "./cards/settings";
 import "./cards/diagram";
 import "./cards/charts";

@@ -134,3 +134,15 @@ substitutions:
   t_hub_rc_in_use: "kalendarz używany dziś przez strefę / CWU"
   t_hub_rc_no_panel: "wymaga emulowanego panelu strefy 1"
   t_hub_rc_inside: "zakres już trwa"
+
+  # anti-legionella cycle (hub_legionella)
+  n_hub_leg_enable: "${hub_name_prefix} - Cykl legionelli"
+  n_hub_leg_every: "${hub_name_prefix} - Legionella co"
+  n_hub_leg_day: "${hub_name_prefix} - Legionella dzień"
+  n_hub_leg_time: "${hub_name_prefix} - Legionella godzina"
+  n_hub_leg_target: "${hub_name_prefix} - Legionella temperatura"
+  n_hub_leg_timeout: "${hub_name_prefix} - Legionella limit czasu"
+  n_hub_leg_running: "${hub_name_prefix} - Legionella trwa"
+  n_hub_leg_state: "${hub_name_prefix} - Legionella stan"
+  n_hub_leg_now: "${hub_name_prefix} - Legionella teraz"
+
