@@ -1148,7 +1148,7 @@ const e={cs:{" (first judge the curve change after a day)":" (změnu křivky nej
       ${s?X`
       <div class="nb" style="background:${it("teal",.08)};border:1px solid ${it("teal",.25)};color:${rt("teal")}">
         <ha-icon icon="mdi:information-outline"></ha-icon>
-        <span>${this.t("Cykl prowadzi hub, nie piec – przełącza program czasowy CWU na ręczny, podnosi nastawę i po zakończeniu przywraca jedno i drugie.","Run by the hub, not the boiler – it switches the DHW time program to manual, raises the setpoint and restores both afterwards.")}</span></div>
+        <span>${this.t("Cykl prowadzi hub, nie piec – przełącza program czasowy CWU na ręczny i podnosi nastawę; po zakończeniu program wraca na Auto, a nastawę przywraca piec.","Run by the hub, not the boiler – it switches the DHW time program to manual and raises the setpoint; at the end the program returns to Auto and the boiler restores its own setpoint.")}</span></div>
       ${this.enableRow()}
       <div class="sched">
         <div class="srow"><span class="al">${this.t("Co","Every")}</span>

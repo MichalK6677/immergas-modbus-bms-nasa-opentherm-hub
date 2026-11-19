@@ -263,16 +263,22 @@ The boiler's own anti-legionella (P15) cannot be read or scheduled below weekly,
 - it switches the appliance's **DHW time program to Manual** (`2294 = 0`) and writes the DHW setpoint into `2095` (the
   value the boiler reads from the emulated panel). In Manual the boiler applies no Comfort/Eco phases, so nothing can
   override the target — no re-assert loop and no interruption of the heating;
-- it finishes when the cylinder (**D03 / 3016**) reaches the target, on the **timeout** (1–6 h) or when you press the
-  button again; then it writes the previous setpoint back and returns the time program to what it was (normally Auto),
-  so the DHW calendar continues. In a cycle, changing the setpoint or switching the program back to Auto cancels it;
+- it finishes when the cylinder (**D03 / 3016**) reaches the target, on the **timeout** (1-6 h) or when you press the
+  button again; then it only returns the time program to what it was (normally Auto) - the boiler re-applies its own
+  phase setpoint and writes it to `2095`, and the hub adopts it, so the DHW calendar continues. In a cycle, changing the
+  setpoint or switching the program back to Auto cancels it;
 - schedule: every **1–4 weeks**, a weekday and a time (e.g. every 2 weeks, Wednesday 02:00). Free choice of target
   **60–65 °C**; measured on a HERCULES PRO 9: the heat pump reaches ~55 °C, above that the electric heater works;
   30 → 60 °C takes about **80 min**, 30 → 65 °C about **100 min**;
 - all state is in flash with epoch timestamps: a hub restart resumes the cycle, an overdue one is finished at boot.
-  If the hub boots without a clock (HA down) for 15 min the cycle is aborted and the setpoint restored.
-- the cycle costs two writes at the start (the time-program mode and the setpoint) and the same two at the end. The 20 s
+  If the hub boots without a clock (HA down) for 15 min the cycle is aborted and the program returned to Auto.
+- the cycle costs two writes at the start (the time-program mode and the setpoint) and one at the end (the mode). The 20 s
   interval that checks the schedule only compares the clock with a stored timestamp; nothing is polled while idle.
+- the hub must **not** write `2095` at the end. A write from the hub arms the echo window in `served_value.h`
+  (`kCommandWaitMs`, 15 s), so the boiler's own value is rejected meanwhile and the boiler keeps the old one as a
+  **temporary manual** setpoint until the next phase change (measured: a cycle from Eco 23 that ended in Comfort 43
+  left the panel serving 23 and the boiler on "23 / manual" while its program was still Auto). Returning `2294` to Auto
+  is enough - the boiler writes its phase setpoint itself and the hub adopts it within a few seconds.
 
 Set **P15 to *None*** on the boiler, otherwise it can start its own 65 °C cycle in parallel.
 

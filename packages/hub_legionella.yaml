@@ -6,13 +6,18 @@
 #    the boiler reads from the emulated panel). In Manual there are no Comfort/Eco transitions at all, so nothing can
 #    override the target - no re-assert and no interruption of the heating;
 #  - it finishes when the cylinder (D03) reaches the target, on timeout, or when you press the button again;
-#  - then it writes the previous setpoint back and returns the time program to what it was (normally Auto), so the DHW
-#    calendar continues;
+#  - then it only returns the time program to what it was (normally Auto). The boiler re-applies its own phase setpoint,
+#    writes it to 2095 and the hub adopts it - so the DHW calendar continues without any help. The hub must NOT write
+#    2095 at the end: that write arms the 15 s echo window (served_value.h, kCommandWaitMs), the boiler's own value is
+#    rejected meanwhile and the boiler keeps the old one as a *temporary manual* setpoint (measured 19 Nov 2026: a
+#    cycle that started in Eco 23 and ended in Comfort 43 left the boiler on 23/manual until the next phase change);
 #  - a setpoint change or a switch back to Auto by somebody during the cycle cancels it (the human wins);
 #  - all state is in flash with epoch timestamps: a reboot resumes the cycle, an overdue one is finished at boot.
 #
 # Facts this relies on (measured on a HERCULES PRO 9 with Emulate Panel Zone 1):
 #  - 2095 = the DHW setpoint the panel serves; writing 60 made the boiler apply 60 (display "60 MAN");
+#  - with 2294 = Auto the boiler applies its calendar phase and writes 2095 itself (the hub takes it in ~4 s), so
+#    returning the program to Auto is enough - the setpoint follows without a write from the hub;
 #  - D03 = DHW cylinder temperature, 0.1 °C, refreshed every few seconds;
 #  - the heat pump reaches ~55 °C, above that the electric heater continues (~0.2-0.3 K/min);
 #  - 30 -> 60 °C takes roughly 1 h 20.
@@ -43,10 +48,6 @@ globals:
     restore_value: yes
     initial_value: "0"
   - id: hub_leg_runtgt       # target of the running cycle (a mid-cycle change applies to the next run)
-    type: float
-    restore_value: yes
-    initial_value: "0"
-  - id: hub_leg_prev         # setpoint wanted before the cycle
     type: float
     restore_value: yes
     initial_value: "0"
@@ -210,7 +211,6 @@ script:
           auto now = id(dd_ha_time).now();
           if (!now.is_valid() || std::isnan(id(hub_leg_target).state)) return;
           id(hub_leg_runtgt) = id(hub_leg_target).state;
-          id(hub_leg_prev) = id(dd_cwu_setpoint_number).state;
           id(hub_leg_mode) = (int) id(dd_sel_programy_czasowe).active_index().value_or(1);
           id(hub_leg_start) = now.timestamp;
           id(hub_leg_end) = now.timestamp + (uint32_t) (id(hub_leg_timeout).state * 3600.0f);
@@ -224,7 +224,8 @@ script:
                    id(hub_leg_timeout).state, id(hub_leg_mode));
           id(hub_leg_state).update();
 
-  # end a cycle and put the setpoint and the time-program mode back: 1 = done, 2 = timeout, 3 = cancelled, 4 = no clock
+  # end a cycle and return the DHW time program (the boiler re-applies its own setpoint): 1 = done, 2 = timeout,
+  # 3 = cancelled, 4 = no clock
   - id: hub_leg_finish
     mode: restart
     parameters:
@@ -232,8 +233,9 @@ script:
     then:
       - lambda: |-
           if (!id(hub_leg_run)) return;
-          float back = id(hub_leg_prev) > 0 ? id(hub_leg_prev) : 0;
-          if (back > 0) id(dd_cwu_setpoint_number).make_call().set_value(back).perform();
+          // only the time program goes back: in Auto the boiler applies its own phase setpoint and writes 2095, and the
+          // hub adopts it. Writing 2095 here would arm the echo window and the boiler's own value would be rejected -
+          // it would then keep the cycle target as a temporary manual setpoint until the next phase change.
           if (id(hub_leg_mode) >= 0) {
             id(dd_sel_programy_czasowe).make_call().set_index(id(hub_leg_mode)).perform();   // back to Auto (or as it was)
             id(hub_leg_mode) = -1;
@@ -248,7 +250,7 @@ script:
           id(hub_leg_run) = false;
           id(hub_leg_end) = 0;
           id(hub_leg_wd) = 0;
-          ESP_LOGW("hub_leg", "finished (%d): max %.1f, setpoint back to %.1f", reason, id(hub_leg_lastmax), back);
+          ESP_LOGW("hub_leg", "finished (%d): max %.1f, time program restored", reason, id(hub_leg_lastmax));
           id(hub_leg_state).update();
 
 button:

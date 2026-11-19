@@ -1,6 +1,7 @@
 // "Anty-legionella / Anti-legionella": a DHW disinfection cycle scheduled by the hub (package hub_legionella).
-// The hub writes the DHW setpoint the boiler reads from the emulated panel, watches the cylinder (D03) and restores
-// the value the boiler itself wants when the cycle ends. The boiler's own P15 program is not on the bus.
+// The hub puts the DHW time program into Manual, writes the setpoint the boiler reads from the emulated panel and
+// watches the cylinder (D03); at the end it returns the program to Auto and the boiler re-applies its own setpoint.
+// The boiler's own P15 program is not on the bus.
 import { HubCard, html, css, nothing, c, ca, register } from "../base";
 import { Key } from "../names";
 
@@ -79,8 +80,8 @@ class ImmergasLegionellaCard extends HubCard {
       ${!open ? nothing : html`
       <div class="nb" style="background:${ca("teal", 0.08)};border:1px solid ${ca("teal", 0.25)};color:${c("teal")}">
         <ha-icon icon="mdi:information-outline"></ha-icon>
-        <span>${this.t("Cykl prowadzi hub, nie piec – przełącza program czasowy CWU na ręczny, podnosi nastawę i po zakończeniu przywraca jedno i drugie.",
-          "Run by the hub, not the boiler – it switches the DHW time program to manual, raises the setpoint and restores both afterwards.")}</span></div>
+        <span>${this.t("Cykl prowadzi hub, nie piec – przełącza program czasowy CWU na ręczny i podnosi nastawę; po zakończeniu program wraca na Auto, a nastawę przywraca piec.",
+          "Run by the hub, not the boiler – it switches the DHW time program to manual and raises the setpoint; at the end the program returns to Auto and the boiler restores its own setpoint.")}</span></div>
       ${this.enableRow()}
       <div class="sched">
         <div class="srow"><span class="al">${this.t("Co", "Every")}</span>
